@@ -3,7 +3,7 @@ import sys
 import os
 import crawler
 import time
-from parserr import parse
+from parser_cnj import parse
 import json
 from coleta import coleta_pb2 as Coleta, IDColeta
 from google.protobuf.timestamp_pb2 import Timestamp

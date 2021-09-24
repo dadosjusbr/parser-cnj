@@ -112,15 +112,14 @@ def cria_remuneracao(row,  categoria):
         remuneracao.natureza = Coleta.Remuneracao.Natureza.Value("R")
         remuneracao.categoria = categoria
         remuneracao.item = key
-        remuneracao.valor = float(row[value])
+        remuneracao.valor = float(format_value(row[value]))
         remuneracao.tipo_receita = Coleta.Remuneracao.TipoReceita.Value("O")
         if categoria == CONTRACHEQUE and value == 3:
             remuneracao.tipo_receita = Coleta.Remuneracao.TipoReceita.Value("B")
         if categoria == CONTRACHEQUE and value in [8,9,10,11]:
             remuneracao.valor = remuneracao.valor * (-1)
             remuneracao.natureza = Coleta.Remuneracao.Natureza.Value("D")
-        if categoria == DIREITOS_EVENTUAIS and value == 5:
-            remuneracao.valor = format_value(row[value])
+        
             
         remu_array.remuneracao.append(remuneracao)
     return remu_array
