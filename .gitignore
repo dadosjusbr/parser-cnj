@@ -2,7 +2,10 @@
 __pycache__/
 *.py[cod]
 *$py.class
-
+/cnj-venv
+/src/__pycache__
+/chromedriver
+/result.json
 # C extensions
 *.so
 
