@@ -8,5 +8,5 @@ selenium==3.141.0
 six==1.15.0
 urllib3==1.26.5
 xlrd==2.0.1
-coleta-dadosjusbr==0.3
+coleta-dadosjusbr==0.4
 protobuf==3.18.0
