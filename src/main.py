@@ -60,16 +60,11 @@ def main():
     coleta.versao_coletor = crawler_version
     coleta.dir_coletor = 'cnj'
     coleta.arquivos.extend(file_names)
-    rc = {
-        'coleta': coleta,
-        'folha': folha,
-    }
     rc = Coleta.ResultadoColeta()
     rc.folha.CopyFrom(folha)
     rc.coleta.CopyFrom(coleta)
     print(rc.SerializeToString())
     #rc_dict = MessageToDict(rc, preserving_proto_field_name=True, use_integers_for_enums= True)
-    #print(json.dumps({'coleta': rc_dict['coleta'], 'folha': rc_dict['folha']}, ensure_ascii=False))
     
 
 if __name__ == '__main__':
