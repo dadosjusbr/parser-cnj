@@ -7,7 +7,7 @@ from  coleta import coleta_pb2 as Coleta
 CONTRACHEQUE = 'contracheque'
 INDENIZACOES = 'indenizações'
 DIREITOS_EVENTUAIS = 'direitos-eventuais'
-DIREITOS_PESSOAIS = '-direitos-pessoais'
+DIREITOS_PESSOAIS = 'direitos-pessoais'
 MEMBRO = 0
 RECEITA = 0
 DESPESA = 1
@@ -101,7 +101,7 @@ def cria_remuneracao(row,  categoria):
         key, value = items[i][0], items[i][1]
         if 'Outra' in key:
             remuneracao = Coleta.Remuneracao()
-            remuneracao.item = row[items[i+1][1]]
+            remuneracao.item = str(row[items[i+1][1]])
             remuneracao.valor = float(row[value])
             remuneracao.categoria = categoria
             remuneracao.tipo_receita = Coleta.Remuneracao.TipoReceita.Value("O")
@@ -150,7 +150,7 @@ def parse(file_names, chave_coleta):
                 update_employees(fn, employees, INDENIZACOES)
             elif "direitos-eventuais" in fn:
                 update_employees(fn, employees, DIREITOS_EVENTUAIS)
-            elif "-direitos-pessoais" in fn:
+            elif "direitos-pessoais" in fn:
                 update_employees(fn, employees, DIREITOS_PESSOAIS)
 
     except KeyError as e:

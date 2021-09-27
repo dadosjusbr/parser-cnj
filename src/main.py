@@ -43,8 +43,6 @@ else:
     crawler_version = "unspecified"
 
 # Main execution
-
-
 def main():
     file_names = crawler.crawl(court, year, month, driver_path, output_path)
 
