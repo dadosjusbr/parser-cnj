@@ -1,5 +1,6 @@
-import parser
+from parser_cnj import parse
 import unittest
+from google.protobuf import text_format
 import json
 
 class TestParser(unittest.TestCase):
@@ -7,138 +8,15 @@ class TestParser(unittest.TestCase):
     def test_jan_2018(self):
         self.maxDiff = None
 
-        expected = {
-            'reg': '',
-            'name': 'ADRIANO CELSO GUIMARAES',
-            'role': '',
-            'type': 'membro',
-            'workplace': '',
-            'active': True,
-            'income': {
-                'total': 51906.08,
-                'wage': 30471.11,
-                'perks': {
-                    'total': 6202.0,
-                    'food': 1825.0,
-                    'pre_school': 0.0,
-                    'health': 0,
-                    'birth_aid': 0,
-                    'housing_aid': 4377.0,
-                    'subsistence': 0.0
-                },
-                'other': {
-                    'total': 15232.97,
-                    'daily': 0.0,
-                    'others_total': 15232.97,
-                    'others': {
-                        'Abono de permanência': 4342.92,
-                        'ARTIGO 95, III da CF': 549.76,
-                        'Abono constitucional de 1/3 de férias': 0.0,
-                        'Indenização de férias': 0.0,
-                        'Antecipação de férias': 0,
-                        'Gratificação natalina': 0.0,
-                        'Antecipação de gratificação natalina': 0.0,
-                        'Substituição': 0.0,
-                        'Gratificação por exercício cumulativo': 10340.29,
-                        'Gratificação por encargo Curso/Concurso': 0,
-                        'Pagamentos retroativos': 0.0,
-                        'JETON': 0
-                    }
-                }
-            },
-            'discounts': {
-                'total': 14687.56,
-                'prev_contribution': 4342.92,
-                'ceil_retention': 0.0,
-                'income_tax': 7609.24,
-                'others_total': 2735.4,
-                'others': {
-                    'Descontos Diversos': 2735.4
-                }
-            }
-        }
+        expected = "contra_cheque {\n  id_contra_cheque: \"tjrj/01/2018/1\"\n  chave_coleta: \"tjrj/01/2018\"\n  nome: \"ADRIANO CELSO GUIMARAES\"\n  ativo: true\n  remuneracoes {\n    remuneracao {\n      categoria: \"contracheque\"\n      item: \"Subs\\303\\255dio\"\n      valor: 30471.11\n    }\n    remuneracao {\n      natureza: D\n      categoria: \"contracheque\"\n      item: \"Previd\\303\\252ncia P\\303\\272blica\"\n      valor: -4342.92\n      tipo_receita: O\n    }\n    remuneracao {\n      natureza: D\n      categoria: \"contracheque\"\n      item: \"Imposto de renda\"\n      valor: -7609.24\n      tipo_receita: O\n    }\n    remuneracao {\n      natureza: D\n      categoria: \"contracheque\"\n      item: \"Descontos Diversos\"\n      valor: -2735.4\n      tipo_receita: O\n    }\n    remuneracao {\n      natureza: D\n      categoria: \"contracheque\"\n      item: \"Reten\\303\\247\\303\\243o por Teto Constitucional\"\n      tipo_receita: O\n    }\n    remuneracao {\n      categoria: \"contracheque\"\n      item: \"Remunera\\303\\247\\303\\243o do \\303\\263rg\\303\\243o de origem \"\n      tipo_receita: O\n    }\n    remuneracao {\n      categoria: \"contracheque\"\n      item: \"Di\\303\\241rias\"\n      tipo_receita: O\n    }\n    remuneracao {\n      categoria: \"direitos-eventuais\"\n      item: \"Abono constitucional de 1/3 de f\\303\\251rias\"\n      tipo_receita: O\n    }\n    remuneracao {\n      categoria: \"direitos-eventuais\"\n      item: \"Indeniza\\303\\247\\303\\243o de f\\303\\251rias\"\n      tipo_receita: O\n    }\n    remuneracao {\n      categoria: \"direitos-eventuais\"\n      item: \"Antecipa\\303\\247\\303\\243o de f\\303\\251rias\"\n      tipo_receita: O\n    }\n    remuneracao {\n      categoria: \"direitos-eventuais\"\n      item: \"Gratifica\\303\\247\\303\\243o natalina\"\n      tipo_receita: O\n    }\n    remuneracao {\n      categoria: \"direitos-eventuais\"\n      item: \"Antecipa\\303\\247\\303\\243o de gratifica\\303\\247\\303\\243o natalina\"\n      tipo_receita: O\n    }\n    remuneracao {\n      categoria: \"direitos-eventuais\"\n      item: \"Substitui\\303\\247\\303\\243o\"\n      tipo_receita: O\n    }\n    remuneracao {\n      categoria: \"direitos-eventuais\"\n      item: \"Gratifica\\303\\247\\303\\243o por exerc\\303\\255cio cumulativo\"\n      valor: 10340.29\n      tipo_receita: O\n    }\n    remuneracao {\n      categoria: \"direitos-eventuais\"\n      item: \"Gratifica\\303\\247\\303\\243o por encargo Curso/Concurso\"\n      tipo_receita: O\n    }\n    remuneracao {\n      categoria: \"direitos-eventuais\"\n      item: \"Pagamentos retroativos\"\n      tipo_receita: O\n    }\n    remuneracao {\n      categoria: \"direitos-eventuais\"\n      item: \"JETON\"\n      tipo_receita: O\n    }\n    remuneracao {\n      categoria: \"direitos-pessoais\"\n      item: \"Abono de perman\\303\\252ncia\"\n      valor: 4342.92\n      tipo_receita: O\n    }\n    remuneracao {\n      categoria: \"indeniza\\303\\247\\303\\265es\"\n      item: \"Aux\\303\\255lio-alimenta\\303\\247\\303\\243o\"\n      valor: 1825.0\n      tipo_receita: O\n    }\n    remuneracao {\n      categoria: \"indeniza\\303\\247\\303\\265es\"\n      item: \"Aux\\303\\255lio Pr\\303\\251-escolar\"\n      tipo_receita: O\n    }\n    remuneracao {\n      categoria: \"indeniza\\303\\247\\303\\265es\"\n      item: \"Aux\\303\\255lio Sa\\303\\272de\"\n      tipo_receita: O\n    }\n    remuneracao {\n      categoria: \"indeniza\\303\\247\\303\\265es\"\n      item: \"Aux\\303\\255lio Natalidade\"\n      tipo_receita: O\n    }\n    remuneracao {\n      categoria: \"indeniza\\303\\247\\303\\265es\"\n      item: \"Aux\\303\\255lio Moradia\"\n      valor: 4377.0\n      tipo_receita: O\n    }\n    remuneracao {\n      categoria: \"indeniza\\303\\247\\303\\265es\"\n      item: \"Ajuda de Custo\"\n      tipo_receita: O\n    }\n  }\n}\n"
+        files = ['./output_test/TJRJ-contracheque.xlsx',
+                 './output_test/TJRJ-direitos-eventuais.xlsx',
+                 './output_test/TJRJ-direitos-pessoais.xlsx',
+                 './output_test/TJRJ-indenizações.xlsx']
 
-        files = ('./src/output_test/TJRJ-contracheque.xlsx',
-                './src/output_test/TJRJ-direitos-eventuais.xlsx',
-                './src/output_test/TJRJ-direitos-pessoais.xlsx',
-                './src/output_test/TJRJ-indenizações.xlsx')
-
-        parser.parse('TJRJ', "2018", files, '/src/output_test', 'teste')
-        with open('./src/output_test/TJRJ-1-2018.json') as json_file:
-            data = json.load(json_file)
-        employees = data['cr']['employees']
-
-        # Verificações
-        self.assertEqual(1, len(employees))
-        self.assertDictEqual(employees[0], expected)
-
-    def test_jan_2019(self):
-        self.maxDiff = None
-
-        expected = {
-            'reg': '',
-            'name': 'ADRIANO CELSO GUIMARAES',
-            'role': '',
-            'type': 'membro',
-            'workplace': '',
-            'active': True,
-            'income': {
-                'total': 55241.15,
-                'wage': 35462.22,
-                'perks': {
-                    'total': 1825.0,
-                    'food': 1825.0,
-                    'pre_school': 0.0,
-                    'health': 0,
-                    'birth_aid': 0,
-                    'housing_aid': 0.0,
-                    'subsistence': 0.0
-                },
-                'other': {
-                    'total': 17953.93,
-                    'daily': 0.0,
-                    'others_total': 17953.93,
-                    'others': {
-                        'Abono de permanência': 5054.28,
-                        'ARTIGO 95, III da CF': 639.81,
-                        'Abono constitucional de 1/3 de férias': 0.0,
-                        'Indenização de férias': 0.0,
-                        'Antecipação de férias': 0,
-                        'Gratificação natalina': 0.0,
-                        'Antecipação de gratificação natalina': 0.0,
-                        'Substituição': 0.0,
-                        'Gratificação por exercício cumulativo': 12259.84,
-                        'Gratificação por encargo Curso/Concurso': 0,
-                        'Pagamentos retroativos': 0.0,
-                        'JETON': 0
-                    }
-                }
-            },
-            'discounts': {
-                'total': 17620.29,
-                'prev_contribution': 5054.28,
-                'ceil_retention': 0.0,
-                'income_tax': 9006.56,
-                'others_total': 3559.45,
-                'others': {
-                    'Descontos Diversos': 3559.45
-                }
-            }
-        }
-
-        files = ('./src/output_test/TJRJ-contracheque.xlsx',
-                './src/output_test/TJRJ-direitos-eventuais.xlsx',
-                './src/output_test/TJRJ-direitos-pessoais.xlsx',
-                './src/output_test/TJRJ-indenizações.xlsx')
-
-        parser.parse('TJRJ', "2019", files, '/src/output_test', 'teste')
-        with open('./src/output_test/TJRJ-1-2019.json') as json_file:
-            data = json.load(json_file)
-        employees = data['cr']['employees']
-
-        # Verificações
-        self.assertEqual(1, len(employees))
-        self.assertDictEqual(employees[0], expected)
+        folha = parse(files, 'tjrj/01/2018')
+        self.assertEqual(expected, text_format.MessageToString(folha))
+        
 
 if __name__ == '__main__':
     unittest.main()
