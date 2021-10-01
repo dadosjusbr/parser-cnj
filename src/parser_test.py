@@ -1,9 +1,7 @@
-from unittest.case import expectedFailure
 from parser_cnj import parse
 import unittest
-from google.protobuf import text_format
 import json
-from google.protobuf.json_format import MessageToJson, MessageToDict
+from google.protobuf.json_format import MessageToDict
 
 
 class TestParser(unittest.TestCase):
