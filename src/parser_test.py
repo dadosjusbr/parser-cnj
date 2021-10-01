@@ -1,21 +1,28 @@
+from unittest.case import expectedFailure
 from parser_cnj import parse
 import unittest
 from google.protobuf import text_format
 import json
+from google.protobuf.json_format import MessageToJson, MessageToDict
+
 
 class TestParser(unittest.TestCase):
 
     def test_jan_2018(self):
         self.maxDiff = None
+        # Json com a saida esperada
+        with open('./output_test/expected.json', 'r') as fp:
+            expected = json.load(fp)
 
-        expected = "contra_cheque {\n  id_contra_cheque: \"tjrj/01/2018/1\"\n  chave_coleta: \"tjrj/01/2018\"\n  nome: \"ADRIANO CELSO GUIMARAES\"\n  ativo: true\n  remuneracoes {\n    remuneracao {\n      categoria: \"contracheque\"\n      item: \"Subs\\303\\255dio\"\n      valor: 30471.11\n    }\n    remuneracao {\n      natureza: D\n      categoria: \"contracheque\"\n      item: \"Previd\\303\\252ncia P\\303\\272blica\"\n      valor: -4342.92\n      tipo_receita: O\n    }\n    remuneracao {\n      natureza: D\n      categoria: \"contracheque\"\n      item: \"Imposto de renda\"\n      valor: -7609.24\n      tipo_receita: O\n    }\n    remuneracao {\n      natureza: D\n      categoria: \"contracheque\"\n      item: \"Descontos Diversos\"\n      valor: -2735.4\n      tipo_receita: O\n    }\n    remuneracao {\n      natureza: D\n      categoria: \"contracheque\"\n      item: \"Reten\\303\\247\\303\\243o por Teto Constitucional\"\n      tipo_receita: O\n    }\n    remuneracao {\n      categoria: \"contracheque\"\n      item: \"Remunera\\303\\247\\303\\243o do \\303\\263rg\\303\\243o de origem \"\n      tipo_receita: O\n    }\n    remuneracao {\n      categoria: \"contracheque\"\n      item: \"Di\\303\\241rias\"\n      tipo_receita: O\n    }\n    remuneracao {\n      categoria: \"direitos-eventuais\"\n      item: \"Abono constitucional de 1/3 de f\\303\\251rias\"\n      tipo_receita: O\n    }\n    remuneracao {\n      categoria: \"direitos-eventuais\"\n      item: \"Indeniza\\303\\247\\303\\243o de f\\303\\251rias\"\n      tipo_receita: O\n    }\n    remuneracao {\n      categoria: \"direitos-eventuais\"\n      item: \"Antecipa\\303\\247\\303\\243o de f\\303\\251rias\"\n      tipo_receita: O\n    }\n    remuneracao {\n      categoria: \"direitos-eventuais\"\n      item: \"Gratifica\\303\\247\\303\\243o natalina\"\n      tipo_receita: O\n    }\n    remuneracao {\n      categoria: \"direitos-eventuais\"\n      item: \"Antecipa\\303\\247\\303\\243o de gratifica\\303\\247\\303\\243o natalina\"\n      tipo_receita: O\n    }\n    remuneracao {\n      categoria: \"direitos-eventuais\"\n      item: \"Substitui\\303\\247\\303\\243o\"\n      tipo_receita: O\n    }\n    remuneracao {\n      categoria: \"direitos-eventuais\"\n      item: \"Gratifica\\303\\247\\303\\243o por exerc\\303\\255cio cumulativo\"\n      valor: 10340.29\n      tipo_receita: O\n    }\n    remuneracao {\n      categoria: \"direitos-eventuais\"\n      item: \"Gratifica\\303\\247\\303\\243o por encargo Curso/Concurso\"\n      tipo_receita: O\n    }\n    remuneracao {\n      categoria: \"direitos-eventuais\"\n      item: \"Pagamentos retroativos\"\n      tipo_receita: O\n    }\n    remuneracao {\n      categoria: \"direitos-eventuais\"\n      item: \"JETON\"\n      tipo_receita: O\n    }\n    remuneracao {\n      categoria: \"direitos-pessoais\"\n      item: \"Abono de perman\\303\\252ncia\"\n      valor: 4342.92\n      tipo_receita: O\n    }\n    remuneracao {\n      categoria: \"indeniza\\303\\247\\303\\265es\"\n      item: \"Aux\\303\\255lio-alimenta\\303\\247\\303\\243o\"\n      valor: 1825.0\n      tipo_receita: O\n    }\n    remuneracao {\n      categoria: \"indeniza\\303\\247\\303\\265es\"\n      item: \"Aux\\303\\255lio Pr\\303\\251-escolar\"\n      tipo_receita: O\n    }\n    remuneracao {\n      categoria: \"indeniza\\303\\247\\303\\265es\"\n      item: \"Aux\\303\\255lio Sa\\303\\272de\"\n      tipo_receita: O\n    }\n    remuneracao {\n      categoria: \"indeniza\\303\\247\\303\\265es\"\n      item: \"Aux\\303\\255lio Natalidade\"\n      tipo_receita: O\n    }\n    remuneracao {\n      categoria: \"indeniza\\303\\247\\303\\265es\"\n      item: \"Aux\\303\\255lio Moradia\"\n      valor: 4377.0\n      tipo_receita: O\n    }\n    remuneracao {\n      categoria: \"indeniza\\303\\247\\303\\265es\"\n      item: \"Ajuda de Custo\"\n      tipo_receita: O\n    }\n  }\n}\n"
         files = ['./output_test/TJRJ-contracheque.xlsx',
                  './output_test/TJRJ-direitos-eventuais.xlsx',
                  './output_test/TJRJ-direitos-pessoais.xlsx',
                  './output_test/TJRJ-indenizações.xlsx']
 
         folha = parse(files, 'tjrj/01/2018')
-        self.assertEqual(expected, text_format.MessageToString(folha))
+        # Converto o resultado do parser, em dict
+        json_obj = MessageToDict(folha)
+        self.assertEqual(expected, json_obj)
         
 
 if __name__ == '__main__':
