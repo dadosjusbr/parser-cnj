@@ -17,10 +17,10 @@ class TestParser(unittest.TestCase):
                  './output_test/TJRJ-direitos-pessoais.xlsx',
                  './output_test/TJRJ-indenizações.xlsx']
 
-        folha = parse(files, 'tjrj/01/2018')
+        result_data = parse(files, 'tjrj/01/2018')
         # Converto o resultado do parser, em dict
-        json_obj = MessageToDict(folha)
-        self.assertEqual(expected, json_obj)
+        result_to_dict = MessageToDict(result_data)
+        self.assertEqual(expected, result_to_dict)
         
 
 if __name__ == '__main__':
