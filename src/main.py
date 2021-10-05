@@ -6,6 +6,7 @@ from parser_cnj import parse
 from coleta import coleta_pb2 as Coleta, IDColeta
 from google.protobuf.timestamp_pb2 import Timestamp
 from google.protobuf import text_format
+import metadado
 
 if('COURT' in os.environ):
     court = os.environ['COURT']
@@ -67,6 +68,8 @@ def main():
     rc = Coleta.ResultadoColeta()
     rc.folha.CopyFrom(folha)
     rc.coleta.CopyFrom(coleta)
+
+    metadado.captura(rc)
 
     # Imprime a versão textual na saída padrão.
     print(text_format.MessageToString(rc), flush=True, end='')
