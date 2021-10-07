@@ -9,4 +9,5 @@ six==1.15.0
 urllib3==1.26.5
 xlrd==2.0.1
 coleta-dadosjusbr==0.4
+protoDadosjusbr==0.5
 protobuf==3.18.0
