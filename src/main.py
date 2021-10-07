@@ -69,7 +69,7 @@ def main():
     rc.folha.CopyFrom(folha)
     rc.coleta.CopyFrom(coleta)
 
-    metadados = metadado.captura(file_names)
+    metadados = metadado.captura()
     rc.metadados.CopyFrom(metadados)
 
     # Imprime a versão textual na saída padrão.
