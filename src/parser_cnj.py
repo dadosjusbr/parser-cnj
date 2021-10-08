@@ -146,7 +146,7 @@ def parse(file_names, chave_coleta):
             if "contracheque" in fn:
                 # Puts all parsed employees in the big map
                 employees.update(parse_employees(fn, chave_coleta))
-            elif "indenizações" in  fn:
+            elif "indenizacoes" in  fn:
                 update_employees(fn, employees, INDENIZACOES)
             elif "direitos-eventuais" in fn:
                 update_employees(fn, employees, DIREITOS_EVENTUAIS)

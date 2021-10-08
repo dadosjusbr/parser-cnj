@@ -45,7 +45,8 @@ else:
 
 # Main execution
 def main():
-    file_names = crawler.crawl(court, year, month, driver_path, output_path)
+    #file_names = crawler.crawl(court, year, month, driver_path, output_path)
+    file_names = [f.rstrip() for f in sys.stdin.readlines()]
 
     # Cria objeto com dados da coleta.
     coleta = Coleta.Coleta()
