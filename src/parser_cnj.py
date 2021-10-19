@@ -81,17 +81,16 @@ def parse_employees(fn, chave_coleta):
     counter = 1
     for row in rows:
         name = row[1]
-       
-        if name != "0":
-            membro = Coleta.ContraCheque()
-            membro.id_contra_cheque = chave_coleta + '/' + str(counter)
-            membro.chave_coleta = chave_coleta
-            membro.nome = name 
-            membro.tipo = Coleta.ContraCheque.Tipo.Value("MEMBRO")
-            membro.ativo = True
-            membro.remuneracoes.CopyFrom(cria_remuneracao(row, CONTRACHEQUE))
-            employees[name] = membro
-            counter += 1
+        if not isNaN(name) and name != "0":
+                membro = Coleta.ContraCheque()
+                membro.id_contra_cheque = chave_coleta + '/' + str(counter)
+                membro.chave_coleta = chave_coleta
+                membro.nome = name 
+                membro.tipo = Coleta.ContraCheque.Tipo.Value("MEMBRO")
+                membro.ativo = True
+                membro.remuneracoes.CopyFrom(cria_remuneracao(row, CONTRACHEQUE))
+                employees[name] = membro
+                counter += 1
     return employees
 
 def cria_remuneracao(row,  categoria):
