@@ -81,8 +81,7 @@ def parse_employees(fn, chave_coleta):
     counter = 1
     for row in rows:
         name = row[1]
-        if not isNaN(name):
-            if name != "0":
+        if not isNaN(name) and name != "0":
                 membro = Coleta.ContraCheque()
                 membro.id_contra_cheque = chave_coleta + '/' + str(counter)
                 membro.chave_coleta = chave_coleta
