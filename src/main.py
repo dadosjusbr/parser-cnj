@@ -7,6 +7,7 @@ from coleta import coleta_pb2 as Coleta, IDColeta
 from google.protobuf.timestamp_pb2 import Timestamp
 from google.protobuf import text_format
 import metadado
+import pandas as pd
 
 if "COURT" in os.environ:
     court = os.environ["COURT"]
@@ -27,12 +28,6 @@ else:
     sys.stderr.write("Invalid arguments, missing parameter: 'MONTH'.\n")
     os._exit(1)
 
-if "DRIVER_PATH" in os.environ:
-    driver_path = os.environ["DRIVER_PATH"]
-else:
-    sys.stderr.write("Invalid arguments, missing parameter: 'DRIVER_PATH'.\n")
-    os._exit(1)
-
 if "OUTPUT_FOLDER" in os.environ:
     output_path = os.environ["OUTPUT_FOLDER"]
 else:
@@ -43,11 +38,15 @@ if "GIT_COMMIT" in os.environ:
 else:
     crawler_version = "unspecified"
 
-# Main execution
-def main():
-    # file_names = crawler.crawl(court, year, month, driver_path, output_path)
-    file_names = [f.rstrip() for f in sys.stdin.readlines()]
+if "DRIVER_PATH" in os.environ:
+    driver_path = os.environ["DRIVER_PATH"]
+else:
+    sys.stderr.write("Invalid arguments, missing parameter: 'DRIVER_PATH'.\n")
+    os._exit(1)
 
+
+# call parse
+def parse_main():
     # Cria objeto com dados da coleta.
     coleta = Coleta.Coleta()
     coleta.chave_coleta = IDColeta(court, month, year)
@@ -75,6 +74,20 @@ def main():
 
     # Imprime a versão textual na saída padrão.
     print(text_format.MessageToString(rc), flush=True, end="")
+
+
+# Main execution
+def main():
+    file_names = [f.rstrip() for f in sys.stdin.readlines()]
+    data = [name for name in file_names if 'contracheque' in name][0]
+    print(data)
+    plan = pd.read_excel(data, engine='openpyxl')
+    number_of_lines = len(plan.to_numpy())
+
+    if number_of_lines <= 10:
+        print('Tabela com menos de 10 linhas')
+    else:
+        parse_main()
 
 
 if __name__ == "__main__":
