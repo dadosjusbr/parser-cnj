@@ -43,18 +43,18 @@ def select_court(court, driver):
     search_icon.click()
 
     # Selecting the input text in the search bar
-    time.sleep(5)
+    time.sleep(15)
     search_bar = driver.find_element_by_class_name("PopupSearch")
     input_text = search_bar.find_element(By.XPATH, "//input[@type='text']")
       
     # Searching by court name
-    time.sleep(5)
+    time.sleep(15)
     input_text.send_keys(court)
     input_text.send_keys(Keys.ENTER)
     sys.stderr.write("Court selected.\n")
     
     if court == "TJMS":
-        time.sleep(5)
+        time.sleep(15)
         search_icon = driver.find_element(By.XPATH, "//html/body/div[5]/div/div[4]/div[2]/div/div[1]/div[1]")
         search_icon.click()
 
@@ -66,12 +66,12 @@ def select_year(year, driver):
     search_icon.click()
         
     ## Selecting the input text in the search bar
-    time.sleep(5)
+    time.sleep(15)
     search_bar = driver.find_element_by_class_name("PopupSearch")
     input_year = search_bar.find_element(By.XPATH, "//input[@type='text']")
 
      ## Searching by year
-    time.sleep(5)
+    time.sleep(15)
     input_year.send_keys(year)
     input_year.send_keys(Keys.ENTER)
     sys.stderr.write("Year selected.\n")
@@ -84,12 +84,12 @@ def select_month(month, driver):
     search_icon.click()
     
     ## Selecting the input text in the search bar
-    time.sleep(5)
+    time.sleep(15)
     search_bar = driver.find_element_by_class_name("PopupSearch")
     input_month = search_bar.find_element(By.XPATH, "//input[@type='text']")
 
      ## Searching by month
-    time.sleep(5)
+    time.sleep(15)
     input_month.send_keys(month)
     input_month.send_keys(Keys.ENTER)
     sys.stderr.write("Month selected.\n")
@@ -98,17 +98,17 @@ def download(court, year, month, payroll, output_path, driver):
     driver.get(base_URL) 
     
     # Selecting the payroll
-    time.sleep(5)
+    time.sleep(15)
     x_path = "//div[@class='" + payroll[0] + "'][@id='"+ payroll[1] + "']"
     current_payroll = driver.find_element(By.XPATH, x_path)
     current_payroll.click()
     sys.stderr.write("Payroll selected: {}.\n".format(payroll[2]))
     
     # Donwloading the file
-    time.sleep(5)
+    time.sleep(15)
     download = driver.find_element(By.XPATH, "//*[@title='Enviar para Excel']")
     download.click()
-    time.sleep(60)
+    time.sleep(30)
     sys.stderr.write("File downloaded.\n")
 
     # Formating the filename
