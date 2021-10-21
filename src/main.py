@@ -7,7 +7,7 @@ from coleta import coleta_pb2 as Coleta, IDColeta
 from google.protobuf.timestamp_pb2 import Timestamp
 from google.protobuf import text_format
 import metadado
-import pandas as pd
+import data
 
 if "COURT" in os.environ:
     court = os.environ["COURT"]
@@ -45,9 +45,7 @@ else:
     os._exit(1)
 
 
-# call parse
-def parse_main():
-    # Cria objeto com dados da coleta.
+def parse_execution(data, file_names):
     coleta = Coleta.Coleta()
     coleta.chave_coleta = IDColeta(court, month, year)
     coleta.orgao = court.lower()
@@ -62,7 +60,7 @@ def parse_main():
 
     # Consolida folha de pagamento
     folha = Coleta.FolhaDePagamento()
-    folha = parse(file_names, coleta.chave_coleta)
+    folha = parse(data, coleta.chave_coleta)
 
     # Monta resultado da coleta.
     rc = Coleta.ResultadoColeta()
@@ -78,17 +76,14 @@ def parse_main():
 
 # Main execution
 def main():
+    # file_names = crawler.crawl(court, year, month, driver_path, output_path)
     file_names = [f.rstrip() for f in sys.stdin.readlines()]
-    data = [name for name in file_names if 'contracheque' in name][0]
-    print(data)
-    plan = pd.read_excel(data, engine='openpyxl')
-    number_of_lines = len(plan.to_numpy())
 
-    if number_of_lines <= 10:
-        print('Tabela com menos de 10 linhas')
-    else:
-        parse_main()
-
+    dados = data.Data(file_names)
+    dados.validate
+    
+    parse_execution(dados, file_names)
+    
 
 if __name__ == "__main__":
     main()
