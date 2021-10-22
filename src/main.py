@@ -1,7 +1,6 @@
 # coding: utf8
 import sys
 import os
-import crawler
 from parser_cnj import parse
 from coleta import coleta_pb2 as Coleta, IDColeta
 from google.protobuf.timestamp_pb2 import Timestamp
@@ -28,21 +27,10 @@ else:
     sys.stderr.write("Invalid arguments, missing parameter: 'MONTH'.\n")
     os._exit(1)
 
-if "OUTPUT_FOLDER" in os.environ:
-    output_path = os.environ["OUTPUT_FOLDER"]
-else:
-    output_path = "./output"
-
 if "GIT_COMMIT" in os.environ:
     crawler_version = os.environ["GIT_COMMIT"]
 else:
     crawler_version = "unspecified"
-
-if "DRIVER_PATH" in os.environ:
-    driver_path = os.environ["DRIVER_PATH"]
-else:
-    sys.stderr.write("Invalid arguments, missing parameter: 'DRIVER_PATH'.\n")
-    os._exit(1)
 
 
 def parse_execution(data, file_names):
@@ -76,11 +64,10 @@ def parse_execution(data, file_names):
 
 # Main execution
 def main():
-    # file_names = crawler.crawl(court, year, month, driver_path, output_path)
     file_names = [f.rstrip() for f in sys.stdin.readlines()]
 
     dados = data.Data(file_names)
-    dados.validate
+    dados.validate() # Se não acontecer nada, é porque está tudo ok!
     
     parse_execution(dados, file_names)
     
