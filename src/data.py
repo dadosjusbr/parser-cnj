@@ -15,7 +15,6 @@ class Data:
             if 'direitos-pessoais' in file:
                 self.direitos_pessoais = self.__read(file)
 
-    @property
     def validate(self):
         MIN_ROWS = 10
 
@@ -24,16 +23,17 @@ class Data:
                 len(self.direitos_eventuais) < MIN_ROWS or \
                 len(self.direitos_pessoais) < MIN_ROWS:
 
-            sys.exit(
-                "Error! The number of lines, is less than the minimum number of 10 lines"
-            )
+            print(
+                f"Os arquivos a serem consolidados tem menos que {MIN_ROWS} linhas e, por isso, são considerados inválidos.",
+                file=sys.stderr
+                )
+            sys.exit(1)
 
     def __read(self, file):
         try:
             data = pd.read_excel(file, engine='openpyxl').to_numpy()
         except Exception as excep:
-            sys.exit(
-                f"Error reading spreadsheets: {excep}"
-            )
+            print(f"Erro lendo as planilhas: {excep}", file=sys.stderr)
+            sys.exit(1)
 
         return data
