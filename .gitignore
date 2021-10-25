@@ -3,3 +3,4 @@ src/ouput
 .*
 chromedriver
 src/output
+src/test.py
