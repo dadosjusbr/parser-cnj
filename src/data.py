@@ -38,6 +38,9 @@ class Data:
         self.direitos_pessoais = direitos_pessoais
 
     def validate(self):
+    """
+    Validação inicial dos arquivos passados como parâmetros. Aborta a execução do script em caso de erro.
+    """
         MIN_ROWS = 10
 
         if len(self.contracheque) < MIN_ROWS or \
