@@ -1,4 +1,4 @@
-from data import Data
+from data import load
 import unittest
 
 
@@ -10,7 +10,7 @@ class TestData(unittest.TestCase):
                 './output_test/test_data/TJPI-direitos-eventuais.xlsx']
 
         with self.assertRaises(SystemExit) as cm:
-            dados = Data(file_names)
+            dados = load(file_names)
             dados.validate()
         self.assertEqual(cm.exception.code, 1)
         

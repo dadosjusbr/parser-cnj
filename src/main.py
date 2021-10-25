@@ -66,7 +66,7 @@ def parse_execution(data, file_names):
 def main():
     file_names = [f.rstrip() for f in sys.stdin.readlines()]
 
-    dados = data.Data(file_names)
+    dados = data.load(file_names)
     dados.validate() # Se não acontecer nada, é porque está tudo ok!
     
     parse_execution(dados, file_names)
