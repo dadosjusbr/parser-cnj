@@ -63,23 +63,10 @@ HEADERS = {
     },
 }
 
-def read_data(path):
-    try:
-        data = pd.read_excel(path, engine='openpyxl')
-    except Exception as excep:
-        sys.stderr(
-            "Não foi possível fazer a leitura do arquivo: " + path
-            + ". O seguinte erro foi gerado:" + str(excep)
-        )
-        os._exit(1)
-
-    return data
-
 def parse_employees(fn, chave_coleta):
-    rows = read_data(fn).to_numpy()
     employees = {}
     counter = 1
-    for row in rows:
+    for row in fn:
         name = row[1]
         if not isNaN(name) and name != "0":
                 membro = Coleta.ContraCheque()
@@ -92,6 +79,7 @@ def parse_employees(fn, chave_coleta):
                 employees[name] = membro
                 counter += 1
     return employees
+
 
 def cria_remuneracao(row,  categoria):
     remu_array = Coleta.Remuneracoes()
@@ -124,8 +112,7 @@ def cria_remuneracao(row,  categoria):
     return remu_array
 
 def update_employees(fn, employees, categoria):
-    rows = read_data(fn).to_numpy()
-    for row in rows:
+    for row in fn:
         name = row[1]
         if name in employees.keys():
             emp = employees[name]
@@ -134,33 +121,30 @@ def update_employees(fn, employees, categoria):
             employees[name] = emp
     return employees
 
+
 def isNaN(string):
     return string != string
 
-def parse(file_names, chave_coleta):
+
+def parse(data, chave_coleta):
     employees = {}
     folha = Coleta.FolhaDePagamento()
-    try:
-        for fn in file_names:
-            if "contracheque" in fn:
-                # Puts all parsed employees in the big map
-                employees.update(parse_employees(fn, chave_coleta))
-            elif "indenizações" in  fn:
-                update_employees(fn, employees, INDENIZACOES)
-            elif "direitos-eventuais" in fn:
-                update_employees(fn, employees, DIREITOS_EVENTUAIS)
-            elif "direitos-pessoais" in fn:
-                update_employees(fn, employees, DIREITOS_PESSOAIS)
 
+    try:
+        employees.update(parse_employees(data.contracheque, chave_coleta))
+        update_employees(data.indenizacoes, employees, INDENIZACOES)
+        update_employees(data.direitos_eventuais, employees, DIREITOS_EVENTUAIS)
+        update_employees(data.direitos_pessoais, employees, DIREITOS_PESSOAIS)
+                
     except KeyError as e:
         sys.stderr.write(
-            "Registro inválido ao processar verbas indenizatórias: {}".format(e)
+            f"Registro inválido ao processar verbas indenizatórias: {e}"
         )
         os._exit(1)
     for i in employees.values():
         folha.contra_cheque.append(i) 
     return folha
-    #return list(employees.values())
+
 
 def format_value(element):
     # A value was found with incorrect formatting. (3,045.99 instead of 3045.99)
