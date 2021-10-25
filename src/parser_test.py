@@ -16,9 +16,10 @@ class TestParser(unittest.TestCase):
         files = ['output_test/test_parser/TJRJ-contracheque.xlsx',
                  'output_test/test_parser/TJRJ-direitos-eventuais.xlsx',
                  'output_test/test_parser/TJRJ-direitos-pessoais.xlsx',
-                 'output_test/test_parser/TJRJ-indenizações.xlsx']
+                 'output_test/test_parser/TJRJ-indenizações.xlsx',
+                 'output_test/test_parser/controle-de-arquivos-tjrj-2018-01.xlsx']
         
-        dados = load(files)
+        dados = load(files, '2018', '01')
         result_data = parse(dados, 'tjrj/01/2018')
         # Converto o resultado do parser, em dict
         result_to_dict = MessageToDict(result_data)
