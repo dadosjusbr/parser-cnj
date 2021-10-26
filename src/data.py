@@ -2,21 +2,29 @@ import pandas as pd
 import sys
 import os
 
+# Se for erro de não existir planilhas o retorno vai ser esse:
+STATUS_DATA_UNAVAILABLE = 4
+# Caso o erro for a planilha, que é invalida por algum motivo, o retorno vai ser esse:
+STATUS_INVALID_FILE = 5
 
 def _read(file):
     try:
         data = pd.read_excel(file, engine='openpyxl').to_numpy()
     except Exception as excep:
         print(f"Erro lendo as planilhas: {excep}", file=sys.stderr)
-        sys.exit(1)
+        sys.exit(STATUS_INVALID_FILE)
     return data
         
 def load(file_names, year, month):
     """Carrega os arquivos passados como parâmetros.
     
-    :param file_names: slice contendo os arquivos baixados pelo coletor. Os nomes dos arquivos devem seguir uma convenção e começar com contracheque, indenizações, direitos-eventuais e direitos_pessoais.
-    :param year e month: usados para fazer a validação na planilha de controle de dados
-    :return um objeto Data() pronto para operar com os arquivos
+     :param file_names: slice contendo os arquivos baixados pelo coletor.
+    Os nomes dos arquivos devem seguir uma convenção e começar com contracheque,
+    indenizações, direitos-eventuais e direitos_pessoais.
+
+     :param year e month: usados para fazer a validação na planilha de controle de dados
+
+     :return um objeto Data() pronto para operar com os arquivos
     """
     
     contracheque = _read([c for c in file_names if 'contracheque' in c][0])
@@ -47,12 +55,19 @@ class Data:
 
     def validate(self):
         """
-        Validação inicial dos arquivos passados como parâmetros. Aborta a execução do script em caso de erro.
-        Codigos de erros: 4 caso for falta de dados, 5='InvalidFile' se as planilhas forem muito pequenas
+         Validação inicial dos arquivos passados como parâmetros.
+        Aborta a execução do script em caso de erro.
+
+         Caso o validade fique pare o script na leitura da planilha 
+        de controle de dados dara um erro retornando o codigo de erro 4,
+        esse codigo significa que não existe dados para a data pedida.
+
+         Se o validade para na leitura das planilhas, significa que elas
+        são menores que o que minimo permitido, retornando o codigo de erro 5,
+        significa que as planilhas são invalidas.
         """
+
         MIN_ROWS = 10
-        CODE_STATUS_ERROR_4 = 4
-        CODE_STATUS_ERROR_5 = 5
 
         have_spreadsheet = False
         for row in self.controle_de_arquivos:
@@ -67,7 +82,7 @@ class Data:
                         f"Os arquivos a serem consolidados tem menos que {MIN_ROWS} linhas e, por isso, são considerados inválidos.",
                         file=sys.stderr
                     )
-                    sys.exit(CODE_STATUS_ERROR_5)
+                    sys.exit(STATUS_INVALID_FILE)
         if not have_spreadsheet:
             sys.stderr.write(f'Não existe planilhas para {self.month}/{self.year}.')
-            sys.exit(CODE_STATUS_ERROR_4)
+            sys.exit(STATUS_DATA_UNAVAILABLE)
