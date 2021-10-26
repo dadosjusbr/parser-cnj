@@ -16,7 +16,7 @@ class TestParser(unittest.TestCase):
         files = ['output_test/test_parser/contracheque-tjrj-2018-01.xlsx',
                  'output_test/test_parser/direitos-eventuais-tjrj-2018-01.xlsx',
                  'output_test/test_parser/direitos-pessoais-tjrj-2018-01.xlsx',
-                 'output_test/test_parser/indenizações-tjrj-2018-01.xlsx',
+                 'output_test/test_parser/indenizacoes-tjrj-2018-01.xlsx',
                  'output_test/test_parser/controle-de-arquivos-tjrj-2018-01.xlsx']
         
         dados = load(files, '2018', '01')
