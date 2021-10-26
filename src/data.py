@@ -2,6 +2,9 @@ import pandas as pd
 import sys
 import os
 
+# O codigo do crawler escrito na liguagem GO,
+# pode ser visto aqui: https://github.com/dadosjusbr/coletor-cnj-cdp
+
 # Se for erro de não existir planilhas o retorno vai ser esse:
 STATUS_DATA_UNAVAILABLE = 4
 # Caso o erro for a planilha, que é invalida por algum motivo, o retorno vai ser esse:
