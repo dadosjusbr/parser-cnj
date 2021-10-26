@@ -31,7 +31,7 @@ def load(file_names, year, month):
     """
     
     contracheque = _read([c for c in file_names if 'contracheque' in c][0])
-    indenizacoes = _read([i for i in file_names if 'indenizações' in i][0])
+    indenizacoes = _read([i for i in file_names if 'indenizacoes' in i][0])
     direitos_eventuais = _read([de for de in file_names if 'direitos-eventuais' in de][0])
     direitos_pessoais = _read([dp for dp in file_names if 'direitos-pessoais' in dp][0])
     controle_de_arquivos = _read([ca for ca in file_names if 'controle-de-arquivos' in ca][0])
