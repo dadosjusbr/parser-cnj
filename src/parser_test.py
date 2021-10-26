@@ -13,10 +13,10 @@ class TestParser(unittest.TestCase):
         with open('./output_test/test_parser/expected.json', 'r') as fp:
             expected = json.load(fp)
 
-        files = ['output_test/test_parser/TJRJ-contracheque.xlsx',
-                 'output_test/test_parser/TJRJ-direitos-eventuais.xlsx',
-                 'output_test/test_parser/TJRJ-direitos-pessoais.xlsx',
-                 'output_test/test_parser/TJRJ-indenizações.xlsx',
+        files = ['output_test/test_parser/contracheque-tjrj-2018-01.xlsx',
+                 'output_test/test_parser/direitos-eventuais-tjrj-2018-01.xlsx',
+                 'output_test/test_parser/direitos-pessoais-tjrj-2018-01.xlsx',
+                 'output_test/test_parser/indenizações-tjrj-2018-01.xlsx',
                  'output_test/test_parser/controle-de-arquivos-tjrj-2018-01.xlsx']
         
         dados = load(files, '2018', '01')
