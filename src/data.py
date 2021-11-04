@@ -1,9 +1,10 @@
+"""
+O codigo do crawler escrito na liguagem GO,
+pode ser visto aqui: https://github.com/dadosjusbr/coletor-cnj
+"""
 import pandas as pd
 import sys
 import os
-
-# O codigo do crawler escrito na liguagem GO,
-# pode ser visto aqui: https://github.com/dadosjusbr/coletor-cnj-cdp
 
 # Se for erro de não existir planilhas o retorno vai ser esse:
 STATUS_DATA_UNAVAILABLE = 4
@@ -64,28 +65,16 @@ class Data:
          Caso o validade fique pare o script na leitura da planilha 
         de controle de dados dara um erro retornando o codigo de erro 4,
         esse codigo significa que não existe dados para a data pedida.
-
-         Se o validade para na leitura das planilhas, significa que elas
-        são menores que o que minimo permitido, retornando o codigo de erro 5,
-        significa que as planilhas são invalidas.
         """
-
-        MIN_ROWS = 10
-
+        # Essa constante armazena uma string com o mês e ano, para ver
+        # se ela existe na planilha de controle de dados.
+        HAVE_IN_SPREADSHEET = f'{self.month}/{self.year}'
         have_spreadsheet = False
-        for row in self.controle_de_arquivos:
-            if f'{self.month}/{self.year}' in row:
-                have_spreadsheet = True
-                if len(self.contracheque) < MIN_ROWS or \
-                    len(self.indenizacoes) < MIN_ROWS or \
-                    len(self.direitos_eventuais) < MIN_ROWS or \
-                    len(self.direitos_pessoais) < MIN_ROWS:
 
-                    print(
-                        f"Os arquivos a serem consolidados tem menos que {MIN_ROWS} linhas e, por isso, são considerados inválidos.",
-                        file=sys.stderr
-                    )
-                    sys.exit(STATUS_INVALID_FILE)
+        for row in self.controle_de_arquivos:
+            if HAVE_IN_SPREADSHEET in row:
+                have_spreadsheet = True
+                
         if not have_spreadsheet:
-            sys.stderr.write(f'Não existe planilhas para {self.month}/{self.year}.')
+            sys.stderr.write(f'Não existe planilhas para {HAVE_IN_SPREADSHEET}.')
             sys.exit(STATUS_DATA_UNAVAILABLE)
