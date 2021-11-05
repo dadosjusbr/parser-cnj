@@ -1,9 +1,10 @@
-import pandas as pd
+"""O codigo do crawler é escrito na liguagem GO.
+Pode ser visto aqui: https://github.com/dadosjusbr/coletor-cnj
+"""
 import sys
 import os
 
-# O codigo do crawler escrito na liguagem GO,
-# pode ser visto aqui: https://github.com/dadosjusbr/coletor-cnj-cdp
+import pandas as pd
 
 # Se for erro de não existir planilhas o retorno vai ser esse:
 STATUS_DATA_UNAVAILABLE = 4
@@ -21,13 +22,13 @@ def _read(file):
 def load(file_names, year, month):
     """Carrega os arquivos passados como parâmetros.
     
-     :param file_names: slice contendo os arquivos baixados pelo coletor.
+    :param file_names: slice contendo os arquivos baixados pelo coletor.
     Os nomes dos arquivos devem seguir uma convenção e começar com contracheque,
     indenizações, direitos-eventuais e direitos_pessoais.
 
-     :param year e month: usados para fazer a validação na planilha de controle de dados
+    :param year e month: usados para fazer a validação na planilha de controle de dados
 
-     :return um objeto Data() pronto para operar com os arquivos
+    :return um objeto Data() pronto para operar com os arquivos
     """
     
     contracheque = _read([c for c in file_names if 'contracheque' in c][0])
@@ -42,50 +43,38 @@ def load(file_names, year, month):
                 direitos_pessoais,
                 controle_de_arquivos,
                 year,
-                month
-            )
+                month)
  
 class Data:
-    def __init__(self, contracheque, indenizacoes, direitos_eventuais, direitos_pessoais, 
-                controle_de_arquivos, year, month):
-        self.year = year
-        self.month = month
+    def __init__(self, contracheque, indenizacoes, direitos_eventuais,
+                 direitos_pessoais, controle_de_arquivos, year, month):
         self.contracheque = contracheque
         self.indenizacoes = indenizacoes
         self.direitos_eventuais = direitos_eventuais
         self.direitos_pessoais = direitos_pessoais
         self.controle_de_arquivos = controle_de_arquivos
+        self.year = year
+        self.month = month
 
     def validate(self):
-        """
-         Validação inicial dos arquivos passados como parâmetros.
+        """Validação inicial dos arquivos passados como parâmetros.
         Aborta a execução do script em caso de erro.
 
-         Caso o validade fique pare o script na leitura da planilha 
+        Caso o validade fique pare o script na leitura da planilha 
         de controle de dados dara um erro retornando o codigo de erro 4,
         esse codigo significa que não existe dados para a data pedida.
-
-         Se o validade para na leitura das planilhas, significa que elas
-        são menores que o que minimo permitido, retornando o codigo de erro 5,
-        significa que as planilhas são invalidas.
         """
 
-        MIN_ROWS = 10
-
+        # Essa constante armazena uma string com o mês e ano, para ver
+        # se ela existe na planilha de controle de dados.
+        MONTH_YEAR_PATH = f'{self.month}/{self.year}'
         have_spreadsheet = False
-        for row in self.controle_de_arquivos:
-            if f'{self.month}/{self.year}' in row:
-                have_spreadsheet = True
-                if len(self.contracheque) < MIN_ROWS or \
-                    len(self.indenizacoes) < MIN_ROWS or \
-                    len(self.direitos_eventuais) < MIN_ROWS or \
-                    len(self.direitos_pessoais) < MIN_ROWS:
 
-                    print(
-                        f"Os arquivos a serem consolidados tem menos que {MIN_ROWS} linhas e, por isso, são considerados inválidos.",
-                        file=sys.stderr
-                    )
-                    sys.exit(STATUS_INVALID_FILE)
+        for row in self.controle_de_arquivos:
+            if MONTH_YEAR_PATH in row:
+                have_spreadsheet = True
+                break
+                
         if not have_spreadsheet:
-            sys.stderr.write(f'Não existe planilhas para {self.month}/{self.year}.')
+            sys.stderr.write(f'Não existe planilhas para {MONTH_YEAR_PATH}.')
             sys.exit(STATUS_DATA_UNAVAILABLE)
