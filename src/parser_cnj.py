@@ -130,11 +130,26 @@ def cria_remuneracao(row,  categoria):
     items = list(HEADERS[categoria].items())
     for i in  range(len(items)):
         key, value = items[i][0], items[i][1]
-        remuneracao = Coleta.Remuneracao()
-        remuneracao.natureza = Coleta.Remuneracao.Natureza.Value("R")
-        remuneracao.categoria = categoria
-        remuneracao.item = key
-        remuneracao.valor = float(format_value(row[value]))
+        if categoria == DIREITOS_EVENTUAIS and value in [13, 14]:
+            if row[14] != 0:
+                remuneracao = Coleta.Remuneracao()
+                remuneracao.natureza = Coleta.Remuneracao.Natureza.Value("R")
+                remuneracao.categoria = categoria
+                remuneracao.item = row[14]
+                remuneracao.valor = float(format_value(row[13]))
+        elif categoria == DIREITOS_EVENTUAIS and value in [15, 16]:
+            if row[16] != 0:
+                remuneracao = Coleta.Remuneracao()
+                remuneracao.natureza = Coleta.Remuneracao.Natureza.Value("R")
+                remuneracao.categoria = categoria
+                remuneracao.item = row[16]
+                remuneracao.valor = float(format_value(row[15]))
+        else:
+            remuneracao = Coleta.Remuneracao()
+            remuneracao.natureza = Coleta.Remuneracao.Natureza.Value("R")
+            remuneracao.categoria = categoria
+            remuneracao.item = key
+            remuneracao.valor = float(format_value(row[value]))
         if categoria == CONTRACHEQUE and value in [8,9,10,11]:
             remuneracao.valor = remuneracao.valor * (-1)
         
