@@ -63,6 +63,22 @@ HEADERS = {
     },
 }
 
+
+def format_value(element):
+    # A value was found with incorrect formatting. (3,045.99 instead of 3045.99)
+    if isNaN(element):
+        return 0.0
+    if type(element) == str:
+        if "." in element and "," in element:
+            element = element.replace(".", "").replace(",", ".")
+        elif "," in element:
+            element = element.replace(",", ".")
+        elif "-" in element:
+            element = 0.0
+
+    return float(element)
+
+
 def parse_employees(fn, chave_coleta):
     employees = {}
     counter = 1
@@ -84,29 +100,43 @@ def parse_employees(fn, chave_coleta):
 
 def cria_remuneracao(row,  categoria):
     remu_array = Coleta.Remuneracoes()
+    if categoria == DIREITOS_PESSOAIS:
+        key, value = 'Abono de permanência', row[3]
+        remuneracao = Coleta.Remuneracao()
+        remuneracao.item = key
+        remuneracao.valor = float(format_value(value))
+        remuneracao.categoria = categoria
+        remu_array.remuneracao.append(remuneracao)
+
+        key, value = row[5], row[4]       
+        if key != '0':
+            remuneracao = Coleta.Remuneracao()
+            remuneracao.item = key
+            remuneracao.valor = float(format_value(value))
+            remuneracao.categoria = categoria
+            remu_array.remuneracao.append(remuneracao)
+        
+        key, value = row[7], row[6]       
+        if key != '0':
+            remuneracao = Coleta.Remuneracao()
+            remuneracao.item = key
+            remuneracao.valor = float(format_value(value))
+            remuneracao.categoria = categoria
+            remu_array.remuneracao.append(remuneracao)
+
+        return remu_array
+        
+    # 
     items = list(HEADERS[categoria].items())
     for i in  range(len(items)):
         key, value = items[i][0], items[i][1]
-        if 'Outra' in key:
-            remuneracao = Coleta.Remuneracao()
-            remuneracao.item = str(row[items[i+1][1]])
-            remuneracao.valor = float(row[value])
-            remuneracao.categoria = categoria
-            remuneracao.tipo_receita = Coleta.Remuneracao.TipoReceita.Value("O")
-            continue
-        elif 'Detalhe' in key:
-            continue
         remuneracao = Coleta.Remuneracao()
         remuneracao.natureza = Coleta.Remuneracao.Natureza.Value("R")
         remuneracao.categoria = categoria
         remuneracao.item = key
         remuneracao.valor = float(format_value(row[value]))
-        remuneracao.tipo_receita = Coleta.Remuneracao.TipoReceita.Value("O")
-        if categoria == CONTRACHEQUE and value == 3:
-            remuneracao.tipo_receita = Coleta.Remuneracao.TipoReceita.Value("B")
         if categoria == CONTRACHEQUE and value in [8,9,10,11]:
             remuneracao.valor = remuneracao.valor * (-1)
-            remuneracao.natureza = Coleta.Remuneracao.Natureza.Value("D")
         
             
         remu_array.remuneracao.append(remuneracao)
@@ -147,17 +177,4 @@ def parse(data, chave_coleta):
     return folha
 
 
-def format_value(element):
-    # A value was found with incorrect formatting. (3,045.99 instead of 3045.99)
-    if isNaN(element):
-        return 0.0
-    if type(element) == str:
-        if "." in element and "," in element:
-            element = element.replace(".", "").replace(",", ".")
-        elif "," in element:
-            element = element.replace(",", ".")
-        elif "-" in element:
-            element = 0.0
-
-    return float(element)
 
