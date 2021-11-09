@@ -19,7 +19,7 @@ def _read(file):
         sys.exit(STATUS_INVALID_FILE)
     return data
         
-def load(file_names, year, month):
+def load(file_names, year, month, court):
     """Carrega os arquivos passados como parâmetros.
     
     :param file_names: slice contendo os arquivos baixados pelo coletor.
@@ -43,11 +43,12 @@ def load(file_names, year, month):
                 direitos_pessoais,
                 controle_de_arquivos,
                 year,
-                month)
+                month,
+                court)
  
 class Data:
     def __init__(self, contracheque, indenizacoes, direitos_eventuais,
-                 direitos_pessoais, controle_de_arquivos, year, month):
+                 direitos_pessoais, controle_de_arquivos, year, month, court):
         self.contracheque = contracheque
         self.indenizacoes = indenizacoes
         self.direitos_eventuais = direitos_eventuais
@@ -55,6 +56,7 @@ class Data:
         self.controle_de_arquivos = controle_de_arquivos
         self.year = year
         self.month = month
+        self.court = court
 
     def validate(self):
         """Validação inicial dos arquivos passados como parâmetros.
@@ -65,16 +67,15 @@ class Data:
         esse codigo significa que não existe dados para a data pedida.
         """
 
-        # Essa constante armazena uma string com o mês e ano, para ver
-        # se ela existe na planilha de controle de dados.
-        MONTH_YEAR_PATH = f'{self.month}/{self.year}'
+        # Ex: TJPI_01_21.xls
+        NAME_FILE = f'{self.court}_{self.month}_{self.year[2:]}.xls'
         have_spreadsheet = False
 
         for row in self.controle_de_arquivos:
-            if MONTH_YEAR_PATH in row:
+            if NAME_FILE in row:
                 have_spreadsheet = True
                 break
                 
         if not have_spreadsheet:
-            sys.stderr.write(f'Não existe planilhas para {MONTH_YEAR_PATH}.')
+            sys.stderr.write(f'Não existe planilhas para {NAME_FILE}.')
             sys.exit(STATUS_DATA_UNAVAILABLE)
