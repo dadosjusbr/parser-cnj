@@ -7,7 +7,6 @@ from coleta import coleta_pb2 as Coleta
 CONTRACHEQUE = "contracheque"
 INDENIZACOES = "indenizações"
 DIREITOS_EVENTUAIS = "direitos-eventuais"
-DIREITOS_PESSOAIS = "direitos-pessoais"
 MEMBRO = 0
 RECEITA = 0
 DESPESA = 1
@@ -54,17 +53,10 @@ HEADERS = {
         "Outra 2": 15,
         "Detalhe 2": 16,
     },
-    DIREITOS_PESSOAIS: {
-        "Abono de permanência": 3,
-        "Outra 1": 4,
-        "Detalhe 1": 5,
-        "Outra 2": 6,
-        "Detalhe 2": 7,
-    },
 }
 
 
-def format_value(element):
+def to_number(element):
     # A value was found with incorrect formatting. (3,045.99 instead of 3045.99)
     if isNaN(element):
         return 0.0
@@ -106,11 +98,11 @@ def cria_remuneracao(row, categoria):
     a coluna Outras recebe esse valor para o parametro "item" 
     e mantém seu valor para o parametro "valor".
     """
-    if categoria == DIREITOS_PESSOAIS:
+    if categoria == "direitos-pessoais":
         key, value = "Abono de permanência", row[3]
         remuneracao = Coleta.Remuneracao()
         remuneracao.item = key
-        remuneracao.valor = float(format_value(value))
+        remuneracao.valor = to_number(value)
         remuneracao.categoria = categoria
         remu_array.remuneracao.append(remuneracao)
 
@@ -118,7 +110,7 @@ def cria_remuneracao(row, categoria):
         if key != "0":
             remuneracao = Coleta.Remuneracao()
             remuneracao.item = key
-            remuneracao.valor = float(format_value(value))
+            remuneracao.valor = to_number(value)
             remuneracao.categoria = categoria
             remu_array.remuneracao.append(remuneracao)
 
@@ -126,7 +118,7 @@ def cria_remuneracao(row, categoria):
         if key != "0":
             remuneracao = Coleta.Remuneracao()
             remuneracao.item = key
-            remuneracao.valor = float(format_value(value))
+            remuneracao.valor = to_number(value)
             remuneracao.categoria = categoria
             remu_array.remuneracao.append(remuneracao)
 
@@ -145,7 +137,7 @@ def cria_remuneracao(row, categoria):
                 remuneracao.natureza = Coleta.Remuneracao.Natureza.Value("R")
                 remuneracao.categoria = categoria
                 remuneracao.item = row[14]
-                remuneracao.valor = float(format_value(row[13]))
+                remuneracao.valor = to_number(row[13])
                 remu_array.remuneracao.append(remuneracao)
         # Caso seja coluna "Outra" e a coluna "Detalhe" seja diferente de 0, será criada a remuneração.
         elif categoria == DIREITOS_EVENTUAIS and value == 15:
@@ -154,7 +146,7 @@ def cria_remuneracao(row, categoria):
                 remuneracao.natureza = Coleta.Remuneracao.Natureza.Value("R")
                 remuneracao.categoria = categoria
                 remuneracao.item = row[16]
-                remuneracao.valor = float(format_value(row[15]))
+                remuneracao.valor = to_number(row[15])
                 remu_array.remuneracao.append(remuneracao)
         # Cria a remuneração para as demais categorias que não necessitam de tratamento especial para suas colunas "Outra" e "Detalhe"
         else:
@@ -162,7 +154,7 @@ def cria_remuneracao(row, categoria):
             remuneracao.natureza = Coleta.Remuneracao.Natureza.Value("R")
             remuneracao.categoria = categoria
             remuneracao.item = key
-            remuneracao.valor = float(format_value(row[value]))
+            remuneracao.valor = to_number(row[value])
             if categoria == CONTRACHEQUE and value in [8, 9, 10, 11]:
                 remuneracao.valor = remuneracao.valor * (-1)
             remu_array.remuneracao.append(remuneracao)
@@ -193,7 +185,7 @@ def parse(data, chave_coleta):
         employees.update(parse_employees(data.contracheque, chave_coleta))
         update_employees(data.indenizacoes, employees, INDENIZACOES)
         update_employees(data.direitos_eventuais, employees, DIREITOS_EVENTUAIS)
-        update_employees(data.direitos_pessoais, employees, DIREITOS_PESSOAIS)
+        update_employees(data.direitos_pessoais, employees, "direitos-pessoais")
 
     except KeyError as e:
         sys.stderr.write(f"Registro inválido ao processar verbas indenizatórias: {e}")
