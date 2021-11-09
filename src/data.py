@@ -68,14 +68,14 @@ class Data:
         """
 
         # Ex: TJPI_01_21.xls
-        NAME_FILE = f'{self.court}_{self.month}_{self.year[2:]}.xls'
+        FILE_NAME = f'{self.court}_{self.month}_{self.year[2:]}.xls'
         have_spreadsheet = False
 
         for row in self.controle_de_arquivos:
-            if NAME_FILE in row:
+            if FILE_NAME in row:
                 have_spreadsheet = True
                 break
                 
         if not have_spreadsheet:
-            sys.stderr.write(f'Não existe planilhas para {NAME_FILE}.')
+            sys.stderr.write(f'Não existe planilhas para {FILE_NAME}.')
             sys.exit(STATUS_DATA_UNAVAILABLE)
