@@ -130,31 +130,35 @@ def cria_remuneracao(row,  categoria):
     items = list(HEADERS[categoria].items())
     for i in  range(len(items)):
         key, value = items[i][0], items[i][1]
-        if categoria == DIREITOS_EVENTUAIS and value in [13, 14]:
+        if value in [14, 16]:
+            continue
+        if categoria == DIREITOS_EVENTUAIS and value == 13:
             if row[14] != 0:
                 remuneracao = Coleta.Remuneracao()
                 remuneracao.natureza = Coleta.Remuneracao.Natureza.Value("R")
                 remuneracao.categoria = categoria
                 remuneracao.item = row[14]
                 remuneracao.valor = float(format_value(row[13]))
-        elif categoria == DIREITOS_EVENTUAIS and value in [15, 16]:
+                remu_array.remuneracao.append(remuneracao)
+        elif categoria == DIREITOS_EVENTUAIS and value == 15:
             if row[16] != 0:
                 remuneracao = Coleta.Remuneracao()
                 remuneracao.natureza = Coleta.Remuneracao.Natureza.Value("R")
                 remuneracao.categoria = categoria
                 remuneracao.item = row[16]
                 remuneracao.valor = float(format_value(row[15]))
+                remu_array.remuneracao.append(remuneracao)
         else:
             remuneracao = Coleta.Remuneracao()
             remuneracao.natureza = Coleta.Remuneracao.Natureza.Value("R")
             remuneracao.categoria = categoria
             remuneracao.item = key
             remuneracao.valor = float(format_value(row[value]))
-        if categoria == CONTRACHEQUE and value in [8,9,10,11]:
-            remuneracao.valor = remuneracao.valor * (-1)
+            if categoria == CONTRACHEQUE and value in [8,9,10,11]:
+                remuneracao.valor = remuneracao.valor * (-1)
+            remu_array.remuneracao.append(remuneracao)
         
             
-        remu_array.remuneracao.append(remuneracao)
     return remu_array
 
 def update_employees(fn, employees, categoria):
