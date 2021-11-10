@@ -19,7 +19,7 @@ class TestParser(unittest.TestCase):
                  'output_test/test_parser/indenizacoes-tjrj-2018-01.xlsx',
                  'output_test/test_parser/controle-de-arquivos-tjrj-2018-01.xlsx']
                  
-        dados = load(files, '2018', '01')
+        dados = load(files, '2018', '01', 'TJRJ')
         result_data = parse(dados, 'tjrj/01/2018')
         # Converto o resultado do parser, em dict
         result_to_dict = MessageToDict(result_data)
@@ -37,7 +37,7 @@ class TestParser(unittest.TestCase):
                 'output_test/test_parser/test_one_line/indenizacoes-tjpi-2020-01.xlsx',
                 'output_test/test_parser/test_one_line/controle-de-arquivos-tjpi-2020-01.xlsx']
 
-        dados = load(files, '2020', '01')
+        dados = load(files, '2020', '01', 'TJPI')
         result_data = parse(dados, 'tjpi/01/2020')
         # Converto o resultado do parser, em dict
         result_to_dict = MessageToDict(result_data)
