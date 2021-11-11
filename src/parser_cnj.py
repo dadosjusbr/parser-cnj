@@ -34,18 +34,16 @@ def cria_remuneracao(row, categoria):
         remuneracao.categoria = categoria
         remu_array.remuneracao.append(remuneracao)
 
-        key, value = row[5], row[4]
-        if key != "0":
+        key, value = str(row[5]), row[4]
+        if key != '0' and key != '0.0':
             remuneracao = Coleta.Remuneracao()
             remuneracao.item = key
             remuneracao.valor = to_number(value)
             remuneracao.categoria = categoria
             remu_array.remuneracao.append(remuneracao)
 
-        key, value = row[7], row[6]
-        if key == 0.0:
-            key = '0'
-        if key != '0':
+        key, value = str(row[7]), row[6]
+        if str(key) != '0' and key != '0.0':
             remuneracao = Coleta.Remuneracao()
             remuneracao.item = key
             remuneracao.valor = to_number(value)
