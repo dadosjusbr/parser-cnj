@@ -1,7 +1,7 @@
-def isNaN(string):
+def is_nan(string):
     return string != string
 
-def to_number(element):
+def format(element):
     # A value was found with incorrect formatting. (3,045.99 instead of 3045.99)
     if isNaN(element):
         return 0.0

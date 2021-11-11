@@ -8,14 +8,7 @@ from coleta import coleta_pb2 as Coleta
 
 from headers_keys import (CONTRACHEQUE, INDENIZACOES, DIREITOS_PESSOAIS,
                           DIREITOS_EVENTUAIS, HEADERS)
-from methods_table import isNaN, to_number
-
-
-MEMBRO = 0
-RECEITA = 0
-DESPESA = 1
-BASE = 0
-OUTROS = 1
+import number
 
 
 def cria_remuneracao(row, categoria):
@@ -26,11 +19,11 @@ def cria_remuneracao(row, categoria):
     a coluna Outras recebe esse valor para o parametro "item" 
     e mantém seu valor para o parametro "valor".
     """
-    if categoria == "direitos-pessoais":
+    if categoria == DIREITOS_PESSOAIS:
         key, value = "Abono de permanência", row[3]
         remuneracao = Coleta.Remuneracao()
         remuneracao.item = key
-        remuneracao.valor = to_number(value)
+        remuneracao.valor = number.format_element(value)
         remuneracao.categoria = categoria
         remu_array.remuneracao.append(remuneracao)
 
@@ -38,19 +31,20 @@ def cria_remuneracao(row, categoria):
         if key != '0' and key != '0.0':
             remuneracao = Coleta.Remuneracao()
             remuneracao.item = key
-            remuneracao.valor = to_number(value)
+            remuneracao.valor = number.format_element(value)
             remuneracao.categoria = categoria
             remu_array.remuneracao.append(remuneracao)
 
         key, value = str(row[7]), row[6]
-        if str(key) != '0' and key != '0.0':
+        if key != '0' and key != '0.0':
             remuneracao = Coleta.Remuneracao()
             remuneracao.item = key
-            remuneracao.valor = to_number(value)
+            remuneracao.valor = number.format_element(value)
             remuneracao.categoria = categoria
             remu_array.remuneracao.append(remuneracao)
 
         return remu_array
+
 
     items = list(HEADERS[categoria].items())
     for i in range(len(items)):
@@ -60,22 +54,22 @@ def cria_remuneracao(row, categoria):
             continue
         # Caso seja coluna "Outra" e a coluna "Detalhe" seja diferente de 0, será criada a remuneração.
         if categoria == DIREITOS_EVENTUAIS and value == 13:
-            if row[14] != 0:
+            if str(row[14]) != '0' and str(row[14]) != '0.0':
                 remuneracao = Coleta.Remuneracao()
                 remuneracao.natureza = Coleta.Remuneracao.Natureza.Value("R")
                 remuneracao.categoria = categoria
                 remuneracao.item = row[14]
-                remuneracao.valor = to_number(row[13])
+                remuneracao.valor = number.format_element(row[13])
                 remu_array.remuneracao.append(remuneracao)
         # Caso seja coluna "Outra" e a coluna "Detalhe" seja diferente de 0,
         # será criada a remuneração.
         elif categoria == DIREITOS_EVENTUAIS and value == 15:
-            if row[16] != 0:
+            if str(row[16]) != '0' and str(row[16]) != '0.0':
                 remuneracao = Coleta.Remuneracao()
                 remuneracao.natureza = Coleta.Remuneracao.Natureza.Value("R")
                 remuneracao.categoria = categoria
                 remuneracao.item = row[16]
-                remuneracao.valor = to_number(row[15])
+                remuneracao.valor = number.format_element(row[15])
                 remu_array.remuneracao.append(remuneracao)
         # Cria a remuneração para as demais categorias que não necessitam 
         # de tratamento especial para suas colunas "Outra" e "Detalhe"
@@ -84,7 +78,7 @@ def cria_remuneracao(row, categoria):
             remuneracao.natureza = Coleta.Remuneracao.Natureza.Value("R")
             remuneracao.categoria = categoria
             remuneracao.item = key
-            remuneracao.valor = to_number(row[value])
+            remuneracao.valor = number.format_element(row[value])
             if categoria == CONTRACHEQUE and value in [8, 9, 10, 11]:
                 remuneracao.valor = remuneracao.valor * (-1)
             remu_array.remuneracao.append(remuneracao)
@@ -98,7 +92,7 @@ def parse_employees(fn, chave_coleta):
     for row in fn:
         name = row[1]
         # Usa-se o isNaN para não pegar linhas vázias.
-        if not isNaN(name):
+        if not number.is_nan(name):
             membro = Coleta.ContraCheque()
             membro.id_contra_cheque = chave_coleta + "/" + str(counter)
             membro.chave_coleta = chave_coleta
