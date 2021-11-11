@@ -58,6 +58,9 @@ def cria_remuneracao(row, categoria):
         # Campo da coluna "Detalhe", que só utilizado para valor da coluna "Outra".
         if categoria == DIREITOS_EVENTUAIS and value in [14, 16]:
             continue
+        # Campo da coluna "Detalhe", não está sendo utilizado para indenizações.
+        if categoria == INDENIZACOES and value in [10, 12, 14]:
+            continue
         # Caso seja coluna "Outra" e a coluna "Detalhe" seja diferente de 0, será criada a remuneração.
         if categoria == DIREITOS_EVENTUAIS and value == 13:
             if row[14] != 0:
