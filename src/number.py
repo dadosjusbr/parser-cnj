@@ -1,9 +1,9 @@
 def is_nan(string):
     return string != string
 
-def format(element):
+def format_element(element):
     # A value was found with incorrect formatting. (3,045.99 instead of 3045.99)
-    if isNaN(element):
+    if is_nan(element):
         return 0.0
     if type(element) == str:
         if "." in element and "," in element:
