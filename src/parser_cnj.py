@@ -28,7 +28,7 @@ def cria_remuneracao(row, categoria):
         remu_array.remuneracao.append(remuneracao)
 
         key, value = str(row[5]), row[4]
-        if key != '0' and key != '0.0':
+        if key != '0' and key != '0.0' and key != '-':
             remuneracao = Coleta.Remuneracao()
             remuneracao.item = key
             remuneracao.valor = number.format_element(value)
@@ -36,7 +36,7 @@ def cria_remuneracao(row, categoria):
             remu_array.remuneracao.append(remuneracao)
 
         key, value = str(row[7]), row[6]
-        if key != '0' and key != '0.0':
+        if key != '0' and key != '0.0' and key != '-':
             remuneracao = Coleta.Remuneracao()
             remuneracao.item = key
             remuneracao.valor = number.format_element(value)
@@ -56,7 +56,7 @@ def cria_remuneracao(row, categoria):
         if categoria == INDENIZACOES and value in [10, 12, 14]:
             continue
         if categoria == INDENIZACOES and value == 9:
-            if row[10] != 0:
+            if str(row[10]) != '0' and str(row[10]) != '0.0' and str(row[10]) != '-':
                 remuneracao = Coleta.Remuneracao()
                 remuneracao.natureza = Coleta.Remuneracao.Natureza.Value("R")
                 remuneracao.categoria = categoria
@@ -64,7 +64,7 @@ def cria_remuneracao(row, categoria):
                 remuneracao.valor = number.format_element(row[9])
                 remu_array.remuneracao.append(remuneracao)
         elif categoria == INDENIZACOES and value == 11:
-            if row[12] != 0:
+            if str(row[12]) != '0' and str(row[12]) != '0.0' and str(row[12]) != '-':
                 remuneracao = Coleta.Remuneracao()
                 remuneracao.natureza = Coleta.Remuneracao.Natureza.Value("R")
                 remuneracao.categoria = categoria
@@ -72,7 +72,7 @@ def cria_remuneracao(row, categoria):
                 remuneracao.valor = number.format_element(row[11])
                 remu_array.remuneracao.append(remuneracao)
         elif categoria == INDENIZACOES and value == 13:
-            if row[14] != 0:
+            if str(row[14]) != '0' and str(row[14]) != '0.0' and str(row[14]) != '-':
                 remuneracao = Coleta.Remuneracao()
                 remuneracao.natureza = Coleta.Remuneracao.Natureza.Value("R")
                 remuneracao.categoria = categoria
@@ -81,7 +81,7 @@ def cria_remuneracao(row, categoria):
                 remu_array.remuneracao.append(remuneracao)
         # Caso seja coluna "Outra" e a coluna "Detalhe" seja diferente de 0, será criada a remuneração.
         elif categoria == DIREITOS_EVENTUAIS and value == 13:
-            if str(row[14]) != '0' and str(row[14]) != '0.0':
+            if str(row[14]) != '0' and str(row[14]) != '0.0' and str(row[14]) != '-':
                 remuneracao = Coleta.Remuneracao()
                 remuneracao.natureza = Coleta.Remuneracao.Natureza.Value("R")
                 remuneracao.categoria = categoria
@@ -91,7 +91,7 @@ def cria_remuneracao(row, categoria):
         # Caso seja coluna "Outra" e a coluna "Detalhe" seja diferente de 0,
         # será criada a remuneração.
         elif categoria == DIREITOS_EVENTUAIS and value == 15:
-            if str(row[16]) != '0' and str(row[16]) != '0.0':
+            if str(row[16]) != '0' and str(row[16]) != '0.0' and str(row[16]) != '-':
                 remuneracao = Coleta.Remuneracao()
                 remuneracao.natureza = Coleta.Remuneracao.Natureza.Value("R")
                 remuneracao.categoria = categoria
