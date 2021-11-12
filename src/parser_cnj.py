@@ -61,7 +61,7 @@ def cria_remuneracao(row, categoria):
                 remuneracao.natureza = Coleta.Remuneracao.Natureza.Value("R")
                 remuneracao.categoria = categoria
                 remuneracao.item = row[10]
-                remuneracao.valor = to_number(row[9])
+                remuneracao.valor = number.format_element(row[9])
                 remu_array.remuneracao.append(remuneracao)
         elif categoria == INDENIZACOES and value == 11:
             if row[12] != 0:
@@ -69,7 +69,7 @@ def cria_remuneracao(row, categoria):
                 remuneracao.natureza = Coleta.Remuneracao.Natureza.Value("R")
                 remuneracao.categoria = categoria
                 remuneracao.item = row[12]
-                remuneracao.valor = to_number(row[11])
+                remuneracao.valor = number.format_element(row[11])
                 remu_array.remuneracao.append(remuneracao)
         elif categoria == INDENIZACOES and value == 13:
             if row[14] != 0:
@@ -77,7 +77,7 @@ def cria_remuneracao(row, categoria):
                 remuneracao.natureza = Coleta.Remuneracao.Natureza.Value("R")
                 remuneracao.categoria = categoria
                 remuneracao.item = row[14]
-                remuneracao.valor = to_number(row[13])
+                remuneracao.valor = number.format_element(row[13])
                 remu_array.remuneracao.append(remuneracao)
         # Caso seja coluna "Outra" e a coluna "Detalhe" seja diferente de 0, será criada a remuneração.
         elif categoria == DIREITOS_EVENTUAIS and value == 13:
