@@ -64,30 +64,6 @@
                         "item": "Ajuda de Custo"
                     },
                     {
-                        "categoria": "indenizações",
-                        "item": "Outra 1"
-                    },
-                    {
-                        "categoria": "indenizações",
-                        "item": "Detalhe 1"
-                    },
-                    {
-                        "categoria": "indenizações",
-                        "item": "Outra 2"
-                    },
-                    {
-                        "categoria": "indenizações",
-                        "item": "Detalhe 2"
-                    },
-                    {
-                        "categoria": "indenizações",
-                        "item": "Outra 3"
-                    },
-                    {
-                        "categoria": "indenizações",
-                        "item": "Detalhe 3"
-                    },
-                    {
                         "categoria": "direitos-eventuais",
                         "item": "Abono constitucional de 1/3 de férias"
                     },
@@ -128,24 +104,8 @@
                         "item": "JETON"
                     },
                     {
-                        "categoria": "direitos-eventuais",
-                        "item": "-"
-                    },
-                    {
-                        "categoria": "direitos-eventuais",
-                        "item": "-"
-                    },
-                    {
                         "categoria": "direitos-pessoais",
                         "item": "Abono de permanência"
-                    },
-                    {
-                        "categoria": "direitos-pessoais",
-                        "item": "-"
-                    },
-                    {
-                        "categoria": "direitos-pessoais",
-                        "item": "-"
                     }
                 ]
             }

@@ -1,12 +1,13 @@
-from parser_cnj import parse
-import unittest
 import json
+import unittest
+
 from google.protobuf.json_format import MessageToDict
+
 from data import load
+from parser_cnj import parse
 
 
 class TestParser(unittest.TestCase):
-
     def test_jan_2018(self):
         self.maxDiff = None
         # Json com a saida esperada
@@ -23,7 +24,9 @@ class TestParser(unittest.TestCase):
         result_data = parse(dados, 'tjrj/01/2018')
         # Converto o resultado do parser, em dict
         result_to_dict = MessageToDict(result_data)
+
         self.assertEqual(expected, result_to_dict)
+
 
     def test_spreadsheet_with_one_line(self):
         self.maxDiff = None
@@ -41,8 +44,9 @@ class TestParser(unittest.TestCase):
         result_data = parse(dados, 'tjpi/01/2020')
         # Converto o resultado do parser, em dict
         result_to_dict = MessageToDict(result_data)
+
         self.assertEqual(expected, result_to_dict)
-        
+
 
 if __name__ == '__main__':
     unittest.main()
