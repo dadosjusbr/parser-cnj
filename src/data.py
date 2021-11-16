@@ -11,14 +11,16 @@ STATUS_DATA_UNAVAILABLE = 4
 # Caso o erro for a planilha, que é invalida por algum motivo, o retorno vai ser esse:
 STATUS_INVALID_FILE = 5
 
+
 def _read(file):
     try:
-        data = pd.read_excel(file, engine='openpyxl').to_numpy()
+        data = pd.read_excel(file, engine="openpyxl").to_numpy()
     except Exception as excep:
         print(f"Erro lendo as planilhas: {excep}", file=sys.stderr)
         sys.exit(STATUS_INVALID_FILE)
     return data
-        
+
+
 def load(file_names, year, month, court):
     """Carrega os arquivos passados como parâmetros.
     
@@ -30,25 +32,41 @@ def load(file_names, year, month, court):
 
     :return um objeto Data() pronto para operar com os arquivos
     """
-    
-    contracheque = _read([c for c in file_names if 'contracheque' in c][0])
-    indenizacoes = _read([i for i in file_names if 'indenizacoes' in i][0])
-    direitos_eventuais = _read([de for de in file_names if 'direitos-eventuais' in de][0])
-    direitos_pessoais = _read([dp for dp in file_names if 'direitos-pessoais' in dp][0])
-    controle_de_arquivos = _read([ca for ca in file_names if 'controle-de-arquivos' in ca][0])
-    
-    return Data(contracheque,
-                indenizacoes,
-                direitos_eventuais,
-                direitos_pessoais,
-                controle_de_arquivos,
-                year,
-                month,
-                court)
- 
+
+    contracheque = _read([c for c in file_names if "contracheque" in c][0])
+    indenizacoes = _read([i for i in file_names if "indenizacoes" in i][0])
+    direitos_eventuais = _read(
+        [de for de in file_names if "direitos-eventuais" in de][0]
+    )
+    direitos_pessoais = _read([dp for dp in file_names if "direitos-pessoais" in dp][0])
+    controle_de_arquivos = _read(
+        [ca for ca in file_names if "controle-de-arquivos" in ca][0]
+    )
+
+    return Data(
+        contracheque,
+        indenizacoes,
+        direitos_eventuais,
+        direitos_pessoais,
+        controle_de_arquivos,
+        year,
+        month,
+        court,
+    )
+
+
 class Data:
-    def __init__(self, contracheque, indenizacoes, direitos_eventuais,
-                 direitos_pessoais, controle_de_arquivos, year, month, court):
+    def __init__(
+        self,
+        contracheque,
+        indenizacoes,
+        direitos_eventuais,
+        direitos_pessoais,
+        controle_de_arquivos,
+        year,
+        month,
+        court,
+    ):
         self.contracheque = contracheque
         self.indenizacoes = indenizacoes
         self.direitos_eventuais = direitos_eventuais
@@ -68,14 +86,16 @@ class Data:
         """
 
         # Ex: TJPI_01_21.xls
-        FILE_NAME = f'{self.court}_{self.month}_{self.year[2:]}.xls'
+        month_zeroless = self.month.lstrip("0")
+        FILE_NAME = f"{self.court}_{self.month}_{self.year[2:]}.xls"
+        FILE_NAME_ZEROLESS = f"{self.court}_{month_zeroless}_{self.year[2:]}.xls"
         have_spreadsheet = False
 
         for row in self.controle_de_arquivos:
-            if FILE_NAME in row:
+            if FILE_NAME in row or FILE_NAME_ZEROLESS in row:
                 have_spreadsheet = True
                 break
-                
+
         if not have_spreadsheet:
-            sys.stderr.write(f'Não existe planilhas para {FILE_NAME}.')
+            sys.stderr.write(f"Não existe planilhas para {FILE_NAME}.")
             sys.exit(STATUS_DATA_UNAVAILABLE)
