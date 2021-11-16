@@ -97,5 +97,5 @@ class Data:
                 break
 
         if not have_spreadsheet:
-            sys.stderr.write(f"Não existem planilhas contendo o string {FILE_NAME}.")
+            sys.stderr.write(f"Não existem planilhas contendo o string {FILE_NAME} na entrada {self.controle_de_arquivos}.")
             sys.exit(STATUS_DATA_UNAVAILABLE)
