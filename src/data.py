@@ -87,12 +87,13 @@ class Data:
         # Esses nome vem do conteúdo do arquivo controle-de-arquivos.
         # Ex: TJPI_01_21.xls
         month_zeroless = self.month.lstrip("0")
-        FILE_NAME = f"{self.court}_{self.month}_{self.year[2:]}.xls"
-        FILE_NAME_ZEROLESS = f"{self.court}_{month_zeroless}_{self.year[2:]}.xls"
+        FILE_NAME = f"{self.court}_{self.month}_{self.year[2:]}.xls".lower()
+        FILE_NAME_ZEROLESS = f"{self.court}_{month_zeroless}_{self.year[2:]}.xls".lower()
         have_spreadsheet = False
 
         for row in self.controle_de_arquivos:
-            if FILE_NAME in row or FILE_NAME_ZEROLESS in row:
+            lrow = str(row).lower()  # As vezes os arquivos vem com a extensão em maiúsculo.
+            if FILE_NAME in lrow or FILE_NAME_ZEROLESS in lrow:
                 have_spreadsheet = True
                 break
 
