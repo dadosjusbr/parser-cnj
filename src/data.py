@@ -87,8 +87,8 @@ class Data:
 
         # Ex: TJPI_01_21.xls
         month_zeroless = self.month.lstrip("0")
-        FILE_NAME = f"{self.court}_{self.month}_{self.year[2:]}.xls"
-        FILE_NAME_ZEROLESS = f"{self.court}_{month_zeroless}_{self.year[2:]}.xls"
+        FILE_NAME = f"{self.court}_{self.year}_{self.month}.xlsx"
+        FILE_NAME_ZEROLESS = f"{self.court}_{self.year}_{month_zeroless}.xlsx"
         have_spreadsheet = False
 
         for row in self.controle_de_arquivos:
@@ -97,5 +97,5 @@ class Data:
                 break
 
         if not have_spreadsheet:
-            sys.stderr.write(f"Não existe planilhas para {FILE_NAME}.")
+            sys.stderr.write(f"Não existem planilhas contendo o string {FILE_NAME}.")
             sys.exit(STATUS_DATA_UNAVAILABLE)
