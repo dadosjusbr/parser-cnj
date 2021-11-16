@@ -84,11 +84,11 @@ class Data:
         de controle de dados dara um erro retornando o codigo de erro 4,
         esse codigo significa que não existe dados para a data pedida.
         """
-
+        # Esses nome vem do conteúdo do arquivo controle-de-arquivos.
         # Ex: TJPI_01_21.xls
         month_zeroless = self.month.lstrip("0")
-        FILE_NAME = f"{self.court}_{self.year}_{self.month}.xlsx"
-        FILE_NAME_ZEROLESS = f"{self.court}_{self.year}_{month_zeroless}.xlsx"
+        FILE_NAME = f"{self.court}_{self.month}_{self.year[2:]}.xls"
+        FILE_NAME_ZEROLESS = f"{self.court}_{month_zeroless}_{self.year[2:]}.xls"
         have_spreadsheet = False
 
         for row in self.controle_de_arquivos:
