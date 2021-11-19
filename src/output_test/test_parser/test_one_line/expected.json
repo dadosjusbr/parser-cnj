@@ -16,28 +16,24 @@
                         "natureza": "D",
                         "categoria": "contracheque",
                         "item": "Previdência Pública",
-                        "valor": -891368.0300000008,
-                        "tipoReceita": "O"
+                        "valor": -891368.0300000008
                     },
                     {
                         "natureza": "D",
                         "categoria": "contracheque",
                         "item": "Imposto de renda",
-                        "valor": -1559437.48,
-                        "tipoReceita": "O"
+                        "valor": -1559437.48
                     },
                     {
                         "natureza": "D",
                         "categoria": "contracheque",
                         "item": "Descontos Diversos",
-                        "valor": -863381.2400000002,
-                        "tipoReceita": "O"
+                        "valor": -863381.2400000002
                     },
                     {
                         "natureza": "D",
                         "categoria": "contracheque",
-                        "item": "Retenção por Teto Constitucional",
-                        "tipoReceita": "O"
+                        "item": "Retenção por Teto Constitucional"
                     },
                     {
                         "categoria": "contracheque",
