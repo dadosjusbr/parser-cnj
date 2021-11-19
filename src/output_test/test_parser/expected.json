@@ -13,21 +13,25 @@
                         "valor": 30471.11
                     },
                     {
+                        "natureza": "D",
                         "categoria": "contracheque",
                         "item": "Previdência Pública",
                         "valor": -4342.92
                     },
                     {
+                        "natureza": "D",
                         "categoria": "contracheque",
                         "item": "Imposto de renda",
                         "valor": -7609.24
                     },
                     {
+                        "natureza": "D",
                         "categoria": "contracheque",
                         "item": "Descontos Diversos",
                         "valor": -2735.4
                     },
                     {
+                        "natureza": "D",
                         "categoria": "contracheque",
                         "item": "Retenção por Teto Constitucional"
                     },
