@@ -22,6 +22,7 @@ def cria_remuneracao(row, categoria):
     if categoria == DIREITOS_PESSOAIS:
         key, value = "Abono de permanência", row[3]
         remuneracao = Coleta.Remuneracao()
+        remuneracao.tipo_receita = Coleta.Remuneracao.TipoReceita.Value("O")
         remuneracao.item = key
         remuneracao.valor = number.format_element(value)
         remuneracao.categoria = categoria
@@ -30,6 +31,7 @@ def cria_remuneracao(row, categoria):
         key, value = str(row[5]), row[4]
         if key != '0' and key != '0.0' and key != '-':
             remuneracao = Coleta.Remuneracao()
+            remuneracao.tipo_receita = Coleta.Remuneracao.TipoReceita.Value("O")
             remuneracao.item = key
             remuneracao.valor = number.format_element(value)
             remuneracao.categoria = categoria
@@ -38,6 +40,7 @@ def cria_remuneracao(row, categoria):
         key, value = str(row[7]), row[6]
         if key != '0' and key != '0.0' and key != '-':
             remuneracao = Coleta.Remuneracao()
+            remuneracao.tipo_receita = Coleta.Remuneracao.TipoReceita.Value("O")
             remuneracao.item = key
             remuneracao.valor = number.format_element(value)
             remuneracao.categoria = categoria
@@ -59,6 +62,7 @@ def cria_remuneracao(row, categoria):
             if str(row[10]) != '0' and str(row[10]) != '0.0' and str(row[10]) != '-':
                 remuneracao = Coleta.Remuneracao()
                 remuneracao.natureza = Coleta.Remuneracao.Natureza.Value("R")
+                remuneracao.tipo_receita = Coleta.Remuneracao.TipoReceita.Value("O")
                 remuneracao.categoria = categoria
                 remuneracao.item = row[10]
                 remuneracao.valor = number.format_element(row[9])
@@ -67,6 +71,7 @@ def cria_remuneracao(row, categoria):
             if str(row[12]) != '0' and str(row[12]) != '0.0' and str(row[12]) != '-':
                 remuneracao = Coleta.Remuneracao()
                 remuneracao.natureza = Coleta.Remuneracao.Natureza.Value("R")
+                remuneracao.tipo_receita = Coleta.Remuneracao.TipoReceita.Value("O")
                 remuneracao.categoria = categoria
                 remuneracao.item = row[12]
                 remuneracao.valor = number.format_element(row[11])
@@ -75,6 +80,7 @@ def cria_remuneracao(row, categoria):
             if str(row[14]) != '0' and str(row[14]) != '0.0' and str(row[14]) != '-':
                 remuneracao = Coleta.Remuneracao()
                 remuneracao.natureza = Coleta.Remuneracao.Natureza.Value("R")
+                remuneracao.tipo_receita = Coleta.Remuneracao.TipoReceita.Value("O")
                 remuneracao.categoria = categoria
                 remuneracao.item = row[14]
                 remuneracao.valor = number.format_element(row[13])
@@ -84,6 +90,7 @@ def cria_remuneracao(row, categoria):
             if str(row[14]) != '0' and str(row[14]) != '0.0' and str(row[14]) != '-':
                 remuneracao = Coleta.Remuneracao()
                 remuneracao.natureza = Coleta.Remuneracao.Natureza.Value("R")
+                remuneracao.tipo_receita = Coleta.Remuneracao.TipoReceita.Value("O")
                 remuneracao.categoria = categoria
                 remuneracao.item = row[14]
                 remuneracao.valor = number.format_element(row[13])
@@ -94,6 +101,7 @@ def cria_remuneracao(row, categoria):
             if str(row[16]) != '0' and str(row[16]) != '0.0' and str(row[16]) != '-':
                 remuneracao = Coleta.Remuneracao()
                 remuneracao.natureza = Coleta.Remuneracao.Natureza.Value("R")
+                remuneracao.tipo_receita = Coleta.Remuneracao.TipoReceita.Value("O")
                 remuneracao.categoria = categoria
                 remuneracao.item = row[16]
                 remuneracao.valor = number.format_element(row[15])
@@ -109,6 +117,10 @@ def cria_remuneracao(row, categoria):
             if categoria == CONTRACHEQUE and value in [8, 9, 10, 11]:
                 remuneracao.natureza = Coleta.Remuneracao.Natureza.Value("D")
                 remuneracao.valor = remuneracao.valor * (-1)
+            else:
+                remuneracao.tipo_receita = Coleta.Remuneracao.TipoReceita.Value("O")
+            if categoria == CONTRACHEQUE and value == 3:
+                remuneracao.tipo_receita = Coleta.Remuneracao.TipoReceita.Value("B")
             remu_array.remuneracao.append(remuneracao)
 
     return remu_array
