@@ -107,6 +107,7 @@ def cria_remuneracao(row, categoria):
             remuneracao.item = key
             remuneracao.valor = number.format_element(row[value])
             if categoria == CONTRACHEQUE and value in [8, 9, 10, 11]:
+                remuneracao.natureza = Coleta.Remuneracao.Natureza.Value("D")
                 remuneracao.valor = remuneracao.valor * (-1)
             remu_array.remuneracao.append(remuneracao)
 

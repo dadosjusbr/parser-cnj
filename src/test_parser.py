@@ -24,7 +24,7 @@ class TestParser(unittest.TestCase):
         result_data = parse(dados, 'tjrj/01/2018')
         # Converto o resultado do parser, em dict
         result_to_dict = MessageToDict(result_data)
-
+        
         self.assertEqual(expected, result_to_dict)
 
 
@@ -44,7 +44,7 @@ class TestParser(unittest.TestCase):
         result_data = parse(dados, 'tjpi/01/2020')
         # Converto o resultado do parser, em dict
         result_to_dict = MessageToDict(result_data)
-
+        
         self.assertEqual(expected, result_to_dict)
 
 
