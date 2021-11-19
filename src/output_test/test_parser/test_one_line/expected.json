@@ -16,100 +16,123 @@
                         "natureza": "D",
                         "categoria": "contracheque",
                         "item": "Previdência Pública",
-                        "valor": -891368.0300000008
+                        "valor": -891368.0300000008,
+                        "tipoReceita": "O"
                     },
                     {
                         "natureza": "D",
                         "categoria": "contracheque",
                         "item": "Imposto de renda",
-                        "valor": -1559437.48
+                        "valor": -1559437.48,
+                        "tipoReceita": "O"
                     },
                     {
                         "natureza": "D",
                         "categoria": "contracheque",
                         "item": "Descontos Diversos",
-                        "valor": -863381.2400000002
+                        "valor": -863381.2400000002,
+                        "tipoReceita": "O"
                     },
                     {
                         "natureza": "D",
                         "categoria": "contracheque",
-                        "item": "Retenção por Teto Constitucional"
+                        "item": "Retenção por Teto Constitucional",
+                        "tipoReceita": "O"
                     },
                     {
                         "categoria": "contracheque",
-                        "item": "Remuneração do órgão de origem "
+                        "item": "Remuneração do órgão de origem ",
+                        "tipoReceita": "O"
                     },
                     {
                         "categoria": "contracheque",
-                        "item": "Diárias"
+                        "item": "Diárias",
+                        "tipoReceita": "O"
                     },
                     {
                         "categoria": "indenizações",
-                        "item": "Auxílio-alimentação"
+                        "item": "Auxílio-alimentação",
+                        "tipoReceita": "O"
                     },
                     {
                         "categoria": "indenizações",
-                        "item": "Auxílio Pré-escolar"
+                        "item": "Auxílio Pré-escolar",
+                        "tipoReceita": "O"
                     },
                     {
                         "categoria": "indenizações",
-                        "item": "Auxílio Saúde"
+                        "item": "Auxílio Saúde",
+                        "tipoReceita": "O"
                     },
                     {
                         "categoria": "indenizações",
-                        "item": "Auxílio Natalidade"
+                        "item": "Auxílio Natalidade",
+                        "tipoReceita": "O"
                     },
                     {
                         "categoria": "indenizações",
-                        "item": "Auxílio Moradia"
+                        "item": "Auxílio Moradia",
+                        "tipoReceita": "O"
                     },
                     {
                         "categoria": "indenizações",
-                        "item": "Ajuda de Custo"
+                        "item": "Ajuda de Custo",
+                        "tipoReceita": "O"
                     },
                     {
                         "categoria": "direitos-eventuais",
-                        "item": "Abono constitucional de 1/3 de férias"
+                        "item": "Abono constitucional de 1/3 de férias",
+                        "tipoReceita": "O"
                     },
                     {
                         "categoria": "direitos-eventuais",
-                        "item": "Indenização de férias"
+                        "item": "Indenização de férias",
+                        "tipoReceita": "O"
                     },
                     {
                         "categoria": "direitos-eventuais",
-                        "item": "Antecipação de férias"
+                        "item": "Antecipação de férias",
+                        "tipoReceita": "O"
                     },
                     {
                         "categoria": "direitos-eventuais",
-                        "item": "Gratificação natalina"
+                        "item": "Gratificação natalina",
+                        "tipoReceita": "O"
                     },
                     {
                         "categoria": "direitos-eventuais",
-                        "item": "Antecipação de gratificação natalina"
+                        "item": "Antecipação de gratificação natalina",
+                        "tipoReceita": "O"
                     },
                     {
                         "categoria": "direitos-eventuais",
-                        "item": "Substituição"
+                        "item": "Substituição",
+                        "tipoReceita": "O"
                     },
                     {
                         "categoria": "direitos-eventuais",
-                        "item": "Gratificação por exercício cumulativo"
+                        "item": "Gratificação por exercício cumulativo",
+                        "tipoReceita": "O"
                     },
                     {
                         "categoria": "direitos-eventuais",
-                        "item": "Gratificação por encargo Curso/Concurso"
+                        "item": "Gratificação por encargo Curso/Concurso",
+                        "tipoReceita": "O"
                     },
                     {
                         "categoria": "direitos-eventuais",
-                        "item": "Pagamentos retroativos"
+                        "item": "Pagamentos retroativos",
+                        "tipoReceita": "O"
                     },
                     {
                         "categoria": "direitos-eventuais",
-                        "item": "JETON"
+                        "item": "JETON",
+                        "tipoReceita": "O"
                     },
                     {
                         "categoria": "direitos-pessoais",
-                        "item": "Abono de permanência"
+                        "item": "Abono de permanência",
+                        "tipoReceita": "O"
                     }
                 ]
             }
