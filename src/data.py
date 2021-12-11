@@ -89,9 +89,14 @@ class Data:
         month_zeroless = self.month.lstrip("0")
         FILE_NAME = f"{self.court}_{self.month}_{self.year[2:]}.xls".lower()
         FILE_NAME_ZEROLESS = f"{self.court}_{month_zeroless}_{self.year[2:]}.xls".lower()
+        have_spreadsheet = False
 
         for row in self.controle_de_arquivos:
             lrow = str(row).lower()  # As vezes os arquivos vem com a extensão em maiúsculo.
             if FILE_NAME in lrow or FILE_NAME_ZEROLESS in lrow:
-                sys.stderr.write(f"Não existem planilhas contendo o string {FILE_NAME} na entrada {self.controle_de_arquivos}.")
-                sys.exit(STATUS_DATA_UNAVAILABLE)
+                have_spreadsheet = True
+                break
+
+        if not have_spreadsheet:
+            sys.stderr.write(f"Não existem planilhas contendo o string {FILE_NAME} na entrada {self.controle_de_arquivos}.")
+            sys.exit(STATUS_DATA_UNAVAILABLE)
