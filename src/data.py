@@ -23,7 +23,7 @@ def _read(file):
 
 def load(file_names, year, month, court):
     """Carrega os arquivos passados como parâmetros.
-    
+
     :param file_names: slice contendo os arquivos baixados pelo coletor.
     Os nomes dos arquivos devem seguir uma convenção e começar com contracheque,
     indenizações, direitos-eventuais e direitos_pessoais.
@@ -38,7 +38,8 @@ def load(file_names, year, month, court):
     direitos_eventuais = _read(
         [de for de in file_names if "direitos-eventuais" in de][0]
     )
-    direitos_pessoais = _read([dp for dp in file_names if "direitos-pessoais" in dp][0])
+    direitos_pessoais = _read(
+        [dp for dp in file_names if "direitos-pessoais" in dp][0])
     controle_de_arquivos = _read(
         [ca for ca in file_names if "controle-de-arquivos" in ca][0]
     )
@@ -88,15 +89,25 @@ class Data:
         # Ex: TJPI_01_21.xls
         month_zeroless = self.month.lstrip("0")
         FILE_NAME = f"{self.court}_{self.month}_{self.year[2:]}.xls".lower()
-        FILE_NAME_ZEROLESS = f"{self.court}_{month_zeroless}_{self.year[2:]}.xls".lower()
+        FILE_NAME_ZEROLESS = f"{self.court}_{month_zeroless}_{self.year[2:]}.xls".lower(
+        )
         have_spreadsheet = False
 
         for row in self.controle_de_arquivos:
-            lrow = str(row).lower()  # As vezes os arquivos vem com a extensão em maiúsculo.
+            # As vezes os arquivos vem com a extensão em maiúsculo.
+            lrow = str(row).lower()
             if FILE_NAME in lrow or FILE_NAME_ZEROLESS in lrow:
                 have_spreadsheet = True
                 break
 
         if not have_spreadsheet:
-            sys.stderr.write(f"Não existem planilhas contendo o string {FILE_NAME} na entrada {self.controle_de_arquivos}.")
+            sys.stderr.write(
+                f"Não existem planilhas contendo o string {FILE_NAME} na entrada {self.controle_de_arquivos}.")
+            sys.exit(STATUS_DATA_UNAVAILABLE)
+
+        # Estamos dando erro quando não temos dados detalhados. Isto pois todo o pipeline
+        # de processamento do CNJ assume detalhe.
+        # Discussão em: https://github.com/dadosjusbr/parser-cnj/issues/32
+        if len(self.contracheque) == 1:
+            sys.stderr.write(f"Dados de contracheque sumarizados.")
             sys.exit(STATUS_DATA_UNAVAILABLE)
