@@ -103,7 +103,7 @@ def cria_remuneracao(row, categoria):
                 remuneracao.natureza = Coleta.Remuneracao.Natureza.Value("R")
                 remuneracao.tipo_receita = Coleta.Remuneracao.TipoReceita.Value("O")
                 remuneracao.categoria = categoria
-                remuneracao.item = row[16]
+                remuneracao.item = str(row[16])
                 remuneracao.valor = number.format_element(row[15])
                 remu_array.remuneracao.append(remuneracao)
         # Cria a remuneração para as demais categorias que não necessitam 
