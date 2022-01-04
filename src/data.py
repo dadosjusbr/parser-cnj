@@ -3,6 +3,7 @@ Pode ser visto aqui: https://github.com/dadosjusbr/coletor-cnj
 """
 import sys
 import os
+import subprocess
 
 import pandas as pd
 
@@ -21,7 +22,21 @@ def _read(file):
     return data
 
 
-def load(file_names, year, month, court):
+def _convert_file(file, output_path):
+    """
+    Converte os arquivos ODS que estão corrompidos, para XLSX.
+    """
+    subprocess.run(
+        ["libreoffice", "--headless", "--invisible", "--convert-to", "xlsx", file], capture_output=True, text=True
+    )  # Pega a saída para não interferir no print dos dados
+    file_name = file.split(sep="/")[-1]
+    file_name = f'{file_name.split(sep=".")[0]}.xlsx'
+    # Move para o diretório passado por parâmetro
+    subprocess.run(["mv", file_name, f"{output_path}/{file_name}"])
+    return f"{output_path}/{file_name}"
+
+
+def load(file_names, year, month, court, output_path):
     """Carrega os arquivos passados como parâmetros.
 
     :param file_names: slice contendo os arquivos baixados pelo coletor.
@@ -33,15 +48,21 @@ def load(file_names, year, month, court):
     :return um objeto Data() pronto para operar com os arquivos
     """
 
-    contracheque = _read([c for c in file_names if "contracheque" in c][0])
-    indenizacoes = _read([i for i in file_names if "indenizacoes" in i][0])
+    contracheque = _read(_convert_file(
+        [c for c in file_names if "contracheque" in c][0], output_path))
+    indenizacoes = _read(_convert_file(
+        [i for i in file_names if "indenizacoes" in i][0], output_path))
     direitos_eventuais = _read(
-        [de for de in file_names if "direitos-eventuais" in de][0]
+        _convert_file(
+            [de for de in file_names if "direitos-eventuais" in de][0], output_path)
     )
     direitos_pessoais = _read(
-        [dp for dp in file_names if "direitos-pessoais" in dp][0])
+        _convert_file(
+            [dp for dp in file_names if "direitos-pessoais" in dp][0], output_path)
+    )
     controle_de_arquivos = _read(
-        [ca for ca in file_names if "controle-de-arquivos" in ca][0]
+        _convert_file(
+            [ca for ca in file_names if "controle-de-arquivos" in ca][0], output_path)
     )
 
     return Data(

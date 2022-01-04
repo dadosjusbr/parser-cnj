@@ -1,3 +1,6 @@
+![testes](https://github.com/dadosjusbr/parser-cnj/actions/workflows/docker-publish.yml/badge.svg)    
+[![Open in Gitpod](https://gitpod.io/button/open-in-gitpod.svg)](https://gitpod.io/#https://github.com/dadosjusbr/parser-cnj)
+
 # Conselho Nacional de Justiça (CNJ)
 
 Este coletor tem como objetivo a recuperação de informações sobre folhas de pagamentos dos funcionários dos tribunais brasileiros, a partir do Conselho Nacional de Justiça. O site com as informações pode ser acessado [aqui](https://paineis.cnj.jus.br/QvAJAXZfc/opendoc.htm?document=qvw_l%2FPainelCNJ.qvw&host=QVS%40neodimio03&anonymous=true&sheet=shPORT63Relatorios).

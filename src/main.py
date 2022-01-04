@@ -32,6 +32,11 @@ if "GIT_COMMIT" in os.environ:
 else:
     crawler_version = "unspecified"
 
+if "OUTPUT_FOLDER" in os.environ:
+    output_path = os.environ["OUTPUT_FOLDER"]
+else:
+    output_path = "/output"
+
 
 def parse_execution(data, file_names):
     coleta = Coleta.Coleta()
@@ -66,11 +71,11 @@ def parse_execution(data, file_names):
 def main():
     file_names = [f.rstrip() for f in sys.stdin.readlines()]
 
-    dados = data.load(file_names, year, month, court)
-    dados.validate() # Se não acontecer nada, é porque está tudo ok!
-    
+    dados = data.load(file_names, year, month, court, output_path)
+    dados.validate()  # Se não acontecer nada, é porque está tudo ok!
+
     parse_execution(dados, file_names)
-    
+
 
 if __name__ == "__main__":
     main()
