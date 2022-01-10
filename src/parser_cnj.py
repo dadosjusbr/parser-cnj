@@ -92,7 +92,7 @@ def cria_remuneracao(row, categoria):
                 remuneracao.natureza = Coleta.Remuneracao.Natureza.Value("R")
                 remuneracao.tipo_receita = Coleta.Remuneracao.TipoReceita.Value("O")
                 remuneracao.categoria = categoria
-                remuneracao.item = row[14]
+                remuneracao.item = str(row[14])
                 remuneracao.valor = number.format_element(row[13])
                 remu_array.remuneracao.append(remuneracao)
         # Caso seja coluna "Outra" e a coluna "Detalhe" seja diferente de 0,
