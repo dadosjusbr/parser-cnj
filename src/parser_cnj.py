@@ -68,7 +68,7 @@ def cria_remuneracao(row, categoria):
                 remuneracao.valor = number.format_element(row[9])
                 remu_array.remuneracao.append(remuneracao)
         elif categoria == INDENIZACOES and value == 11:
-            if str(row[12]) != '0' and str(row[12]) != '0.0' and str(row[12]) != '-':
+            if str(row[12]) != '0' and str(row[12]) != '0.0' and str(row[12]) != '-' and str(row[12])!='1':
                 remuneracao = Coleta.Remuneracao()
                 remuneracao.natureza = Coleta.Remuneracao.Natureza.Value("R")
                 remuneracao.tipo_receita = Coleta.Remuneracao.TipoReceita.Value("O")
