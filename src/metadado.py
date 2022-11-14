@@ -3,8 +3,6 @@ from coleta import coleta_pb2 as Coleta
 
 def captura():
     metadado = Coleta.Metadados()
-    metadado.nao_requer_login = True
-    metadado.nao_requer_captcha = True
     metadado.acesso = Coleta.Metadados.FormaDeAcesso.NECESSITA_SIMULACAO_USUARIO
     metadado.extensao = Coleta.Metadados.Extensao.XLS
     metadado.estritamente_tabular = True
