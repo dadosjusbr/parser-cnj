@@ -128,7 +128,8 @@ class Data:
 
         # Estamos dando erro quando não temos dados detalhados. Isto pois todo o pipeline
         # de processamento do CNJ assume detalhe.
+        # A coluna Magistrado possui valor '0' quando os dados estão sumarizados, não consideramos os dados se esse for o caso.
         # Discussão em: https://github.com/dadosjusbr/parser-cnj/issues/32
-        if len(self.contracheque) == 1:
+        if len(self.contracheque) == 1 or self.contracheque[1][1] == 0:
             sys.stderr.write(f"Dados de contracheque sumarizados.")
             sys.exit(STATUS_DATA_UNAVAILABLE)
