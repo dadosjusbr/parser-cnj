@@ -7,6 +7,7 @@ from google.protobuf.timestamp_pb2 import Timestamp
 from google.protobuf import text_format
 import metadado
 import data
+import requests
 
 if "COURT" in os.environ:
     court = os.environ["COURT"]
