@@ -7,7 +7,6 @@ from google.protobuf.timestamp_pb2 import Timestamp
 from google.protobuf import text_format
 import metadado
 import data
-import requests
 
 if "COURT" in os.environ:
     court = os.environ["COURT"]
@@ -28,25 +27,15 @@ else:
     sys.stderr.write("Invalid arguments, missing parameter: 'MONTH'.\n")
     os._exit(1)
 
-if "GIT_COMMIT" in os.environ:
-    PARSER_VERSION = os.environ["GIT_COMMIT"]
-else:
-    PARSER_VERSION = "unspecified"
-
-# Pegando o ID do último commit do coletor
-headers = {
-    'Accept': 'application/vnd.github+json',
-    'X-GitHub-Api-Version': '2022-11-28',
-}
-response = requests.get(
-    'https://api.github.com/repos/dadosjusbr/coletor-cnj/commits', headers=headers)
-
-if response.status_code == 200:
-    response = response.json()
-    CRAWLER_VERSION = response[0]["sha"]
+if "CRAWLER_VERSION" in os.environ:
+    CRAWLER_VERSION = os.environ["CRAWLER_VERSION"]
 else:
     CRAWLER_VERSION = "unspecified"
-
+    
+if "PARSER_VERSION" in os.environ:
+    PARSER_VERSION = os.environ["PARSER_VERSION"]
+else:
+    PARSER_VERSION = "unspecified"
 
 if "OUTPUT_FOLDER" in os.environ:
     output_path = os.environ["OUTPUT_FOLDER"]
