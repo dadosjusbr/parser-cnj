@@ -29,21 +29,29 @@ def cria_remuneracao(row, categoria):
         remu_array.remuneracao.append(remuneracao)
 
         key, value = str(row[5]), row[4]
-        if key != '0' and key != '0.0' and key != '-':
+        if key not in ['0','0.0','-'] or str(value) not in ['0','0.0','-']:
             remuneracao = Coleta.Remuneracao()
             remuneracao.tipo_receita = Coleta.Remuneracao.TipoReceita.Value("O")
-            remuneracao.item = key
-            remuneracao.valor = number.format_element(value)
             remuneracao.categoria = categoria
+            # Alguns órgãos têm informado o valor, mas não o detalhe.
+            # Nesses casos, colocaremos "NÃO INFORMADO" como item
+            if key in ['0','0.0','-']:
+                remuneracao.item = "NÃO INFORMADO"
+            else:
+                remuneracao.item = key
+            remuneracao.valor = number.format_element(value)
             remu_array.remuneracao.append(remuneracao)
 
         key, value = str(row[7]), row[6]
-        if key != '0' and key != '0.0' and key != '-':
+        if key not in ['0','0.0','-'] or str(value) not in ['0','0.0','-']:
             remuneracao = Coleta.Remuneracao()
             remuneracao.tipo_receita = Coleta.Remuneracao.TipoReceita.Value("O")
-            remuneracao.item = key
-            remuneracao.valor = number.format_element(value)
             remuneracao.categoria = categoria
+            if key in ['0','0.0','-']:
+                remuneracao.item = "NÃO INFORMADO"
+            else:
+                remuneracao.item = key
+            remuneracao.valor = number.format_element(value)
             remu_array.remuneracao.append(remuneracao)
 
         return remu_array
@@ -85,15 +93,28 @@ def cria_remuneracao(row, categoria):
                 remuneracao.item = row[14]
                 remuneracao.valor = number.format_element(row[13])
                 remu_array.remuneracao.append(remuneracao)
-        # Caso seja coluna "Outra" e a coluna "Detalhe" seja diferente de 0, será criada a remuneração.
+        # Se a coluna 'Outra' ou a coluna 'Detalhe' for diferente de 0, será criada a remuneração.
         elif categoria == DIREITOS_EVENTUAIS and value == 13:
-            if str(row[14]) != '0' and str(row[14]) != '0.0' and str(row[14]) != '-':
+            if (str(row[13]) not in ['0', '0.0', '-']) or (str(row[14]) not in ['0', '0.0', '-']):
                 remuneracao = Coleta.Remuneracao()
                 remuneracao.natureza = Coleta.Remuneracao.Natureza.Value("R")
                 remuneracao.tipo_receita = Coleta.Remuneracao.TipoReceita.Value("O")
                 remuneracao.categoria = categoria
-                remuneracao.item = str(row[14])
-                remuneracao.valor = number.format_element(row[13])
+                # Em abril/2023 percebemos que alguns órgãos têm colocado o valor na coluna 'Detalhe'
+                # e não informando a descrição do respectivo gasto
+                # Alguns órgãos tbm têm colocado o valor na própria coluna, 'Outra', mas tbm não informando o 'Detalhe'
+                # Nesses casos, consideraremos o valor e receberemos "NÃO INFORMADO" como item
+                remuneracao.item = "NÃO INFORMADO"
+                if str(row[13]) in ['0', '0.0', '-']:
+                    try:
+                        remuneracao.valor = number.format_element(row[14])
+                    except:
+                        continue
+                elif str(row[14]) in ['0', '0.0', '-']:
+                    remuneracao.valor = number.format_element(row[13])
+                else:
+                    remuneracao.item = str(row[14])
+                    remuneracao.valor = number.format_element(row[13])
                 remu_array.remuneracao.append(remuneracao)
         # Caso seja coluna "Outra" e a coluna "Detalhe" seja diferente de 0,
         # será criada a remuneração.
@@ -103,8 +124,17 @@ def cria_remuneracao(row, categoria):
                 remuneracao.natureza = Coleta.Remuneracao.Natureza.Value("R")
                 remuneracao.tipo_receita = Coleta.Remuneracao.TipoReceita.Value("O")
                 remuneracao.categoria = categoria
-                remuneracao.item = str(row[16])
-                remuneracao.valor = number.format_element(row[15])
+                remuneracao.item = "NÃO INFORMADO"
+                if str(row[15]) in ['0', '0.0', '-']:
+                    try:
+                        remuneracao.valor = number.format_element(row[16])
+                    except:
+                        continue
+                elif str(row[16]) in ['0', '0.0', '-']:
+                    remuneracao.valor = number.format_element(row[15])
+                else:
+                    remuneracao.item = str(row[16])
+                    remuneracao.valor = number.format_element(row[15])
                 remu_array.remuneracao.append(remuneracao)
         # Cria a remuneração para as demais categorias que não necessitam 
         # de tratamento especial para suas colunas "Outra" e "Detalhe"
