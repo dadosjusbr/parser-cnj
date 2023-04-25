@@ -10,7 +10,6 @@ from headers_keys import (CONTRACHEQUE, INDENIZACOES, DIREITOS_PESSOAIS,
                           DIREITOS_EVENTUAIS, HEADERS)
 import number
 
-sem_detalhamento = False
 
 def cria_remuneracao(row, categoria):
     remu_array = Coleta.Remuneracoes()
@@ -20,7 +19,7 @@ def cria_remuneracao(row, categoria):
     a coluna Outras recebe esse valor para o parametro "item" 
     e mantém seu valor para o parametro "valor".
     """
-    global sem_detalhamento
+    sem_detalhamento = False
     if categoria == DIREITOS_PESSOAIS:
         key, value = "Abono de permanência", row[3]
         remuneracao = Coleta.Remuneracao()
@@ -31,13 +30,13 @@ def cria_remuneracao(row, categoria):
         remu_array.remuneracao.append(remuneracao)
 
         key, value = str(row[5]), row[4]
-        if key not in ['0','0.0','-'] or str(value) not in ['0','0.0','-']:
+        if key not in ['0', '0.0', '-'] or str(value) not in ['0', '0.0', '-']:
             remuneracao = Coleta.Remuneracao()
             remuneracao.tipo_receita = Coleta.Remuneracao.TipoReceita.Value("O")
             remuneracao.categoria = categoria
             # Alguns órgãos têm informado o valor, mas não o detalhe.
             # Nesses casos, colocaremos "NÃO INFORMADO" como item
-            if key in ['0','0.0','-']:
+            if key in ['0', '0.0', '-']:
                 remuneracao.item = "NÃO INFORMADO"
                 sem_detalhamento = True
             else:
@@ -46,19 +45,19 @@ def cria_remuneracao(row, categoria):
             remu_array.remuneracao.append(remuneracao)
 
         key, value = str(row[7]), row[6]
-        if key not in ['0','0.0','-'] or str(value) not in ['0','0.0','-']:
+        if key not in ['0', '0.0', '-'] or str(value) not in ['0', '0.0', '-']:
             remuneracao = Coleta.Remuneracao()
             remuneracao.tipo_receita = Coleta.Remuneracao.TipoReceita.Value("O")
             remuneracao.categoria = categoria
-            if key in ['0','0.0','-']:
+            if key in ['0', '0.0', '-']:
                 remuneracao.item = "NÃO INFORMADO"
+                sem_detalhamento = True
             else:
                 remuneracao.item = key
             remuneracao.valor = number.format_element(value)
             remu_array.remuneracao.append(remuneracao)
 
-        return remu_array
-
+        return remu_array, sem_detalhamento
 
     items = list(HEADERS[categoria].items())
     for i in range(len(items)):
@@ -79,7 +78,7 @@ def cria_remuneracao(row, categoria):
                 remuneracao.valor = number.format_element(row[9])
                 remu_array.remuneracao.append(remuneracao)
         elif categoria == INDENIZACOES and value == 11:
-            if str(row[12]) != '0' and str(row[12]) != '0.0' and str(row[12]) != '-' and str(row[12])!='1':
+            if str(row[12]) != '0' and str(row[12]) != '0.0' and str(row[12]) != '-' and str(row[12]) != '1':
                 remuneracao = Coleta.Remuneracao()
                 remuneracao.natureza = Coleta.Remuneracao.Natureza.Value("R")
                 remuneracao.tipo_receita = Coleta.Remuneracao.TipoReceita.Value("O")
@@ -143,7 +142,7 @@ def cria_remuneracao(row, categoria):
                     remuneracao.item = str(row[16])
                     remuneracao.valor = number.format_element(row[15])
                 remu_array.remuneracao.append(remuneracao)
-        # Cria a remuneração para as demais categorias que não necessitam 
+        # Cria a remuneração para as demais categorias que não necessitam
         # de tratamento especial para suas colunas "Outra" e "Detalhe"
         else:
             remuneracao = Coleta.Remuneracao()
@@ -160,7 +159,7 @@ def cria_remuneracao(row, categoria):
                 remuneracao.tipo_receita = Coleta.Remuneracao.TipoReceita.Value("B")
             remu_array.remuneracao.append(remuneracao)
 
-    return remu_array
+    return remu_array, sem_detalhamento
 
 
 def parse_employees(fn, chave_coleta):
@@ -176,10 +175,12 @@ def parse_employees(fn, chave_coleta):
             membro.nome = str(name)  # Para o caso do campo vier com um int
             membro.tipo = Coleta.ContraCheque.Tipo.Value("MEMBRO")
             membro.ativo = True
-            membro.remuneracoes.CopyFrom(cria_remuneracao(row, CONTRACHEQUE))
+            contracheques, sem_detalhamento = cria_remuneracao(
+                row, CONTRACHEQUE)
+            membro.remuneracoes.CopyFrom(contracheques)
             employees[name] = membro
             counter += 1
-    return employees
+    return employees, sem_detalhamento
 
 # Atualiza os dados que foram passados no segundo parâmetro
 def update_employees(data, employees, categoria):
@@ -187,10 +188,10 @@ def update_employees(data, employees, categoria):
         name = row[1]
         if name in employees.keys():
             emp = employees[name]
-            remu = cria_remuneracao(row, categoria)
+            remu, sem_detalhamento = cria_remuneracao(row, categoria)
             emp.remuneracoes.MergeFrom(remu)
             employees[name] = emp
-    return employees
+    return employees, sem_detalhamento
 
 
 def parse(data, chave_coleta):
@@ -198,18 +199,25 @@ def parse(data, chave_coleta):
     folha = Coleta.FolhaDePagamento()
 
     try:
-        # Cria a base com o contracheque, depois vai ser atualizado com 
+        # Cria a base com o contracheque, depois vai ser atualizado com
         # as outras planilhas.
-        employees.update(parse_employees(data.contracheque, chave_coleta))
+        contracheques, sem_detalhamento = parse_employees(
+            data.contracheque, chave_coleta)
+        employees.update(contracheques)
 
-        update_employees(data.indenizacoes, employees, INDENIZACOES)
-        update_employees(data.direitos_eventuais, employees, DIREITOS_EVENTUAIS)
-        update_employees(data.direitos_pessoais, employees, DIREITOS_PESSOAIS)
+        _, sem_detalhamento = update_employees(
+            data.indenizacoes, employees, INDENIZACOES)
+
+        _, sem_detalhamento = update_employees(
+            data.direitos_eventuais, employees, DIREITOS_EVENTUAIS)
+
+        _, sem_detalhamento = update_employees(
+            data.direitos_pessoais, employees, DIREITOS_PESSOAIS)
 
     except KeyError as error:
         sys.stderr.write(
-                f"Registro inválido ao processar verbas indenizatórias: {error}"
-            )
+            f"Registro inválido ao processar verbas indenizatórias: {error}"
+        )
         os._exit(1)
 
     for values in employees.values():
