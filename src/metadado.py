@@ -1,7 +1,7 @@
 from coleta import coleta_pb2 as Coleta
 
 
-def captura():
+def captura(sem_detalhamento: bool):
     metadado = Coleta.Metadados()
     metadado.acesso = Coleta.Metadados.FormaDeAcesso.NECESSITA_SIMULACAO_USUARIO
     metadado.extensao = Coleta.Metadados.Extensao.XLS
@@ -12,6 +12,9 @@ def captura():
     metadado.tem_cargo = False
     metadado.receita_base = Coleta.Metadados.OpcoesDetalhamento.DETALHADO
     metadado.despesas = Coleta.Metadados.OpcoesDetalhamento.DETALHADO
-    metadado.outras_receitas = Coleta.Metadados.OpcoesDetalhamento.DETALHADO
+    if sem_detalhamento == True:
+        metadado.outras_receitas = Coleta.Metadados.OpcoesDetalhamento.SUMARIZADO
+    else:
+        metadado.outras_receitas = Coleta.Metadados.OpcoesDetalhamento.DETALHADO
 
     return metadado

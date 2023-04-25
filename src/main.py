@@ -60,14 +60,14 @@ def parse_execution(data, file_names):
 
     # Consolida folha de pagamento
     folha = Coleta.FolhaDePagamento()
-    folha = parse(data, coleta.chave_coleta)
+    folha, sem_detalhamento = parse(data, coleta.chave_coleta)
 
     # Monta resultado da coleta.
     rc = Coleta.ResultadoColeta()
     rc.folha.CopyFrom(folha)
     rc.coleta.CopyFrom(coleta)
 
-    metadados = metadado.captura()
+    metadados = metadado.captura(sem_detalhamento)
     rc.metadados.CopyFrom(metadados)
 
     # Imprime a versão textual na saída padrão.
