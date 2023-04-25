@@ -10,6 +10,7 @@ from headers_keys import (CONTRACHEQUE, INDENIZACOES, DIREITOS_PESSOAIS,
                           DIREITOS_EVENTUAIS, HEADERS)
 import number
 
+sem_detalhamento = False
 
 def cria_remuneracao(row, categoria):
     remu_array = Coleta.Remuneracoes()
@@ -19,6 +20,7 @@ def cria_remuneracao(row, categoria):
     a coluna Outras recebe esse valor para o parametro "item" 
     e mantém seu valor para o parametro "valor".
     """
+    global sem_detalhamento
     if categoria == DIREITOS_PESSOAIS:
         key, value = "Abono de permanência", row[3]
         remuneracao = Coleta.Remuneracao()
@@ -37,6 +39,7 @@ def cria_remuneracao(row, categoria):
             # Nesses casos, colocaremos "NÃO INFORMADO" como item
             if key in ['0','0.0','-']:
                 remuneracao.item = "NÃO INFORMADO"
+                sem_detalhamento = True
             else:
                 remuneracao.item = key
             remuneracao.valor = number.format_element(value)
@@ -108,10 +111,12 @@ def cria_remuneracao(row, categoria):
                 if str(row[13]) in ['0', '0.0', '-']:
                     try:
                         remuneracao.valor = number.format_element(row[14])
+                        sem_detalhamento = True
                     except:
                         continue
                 elif str(row[14]) in ['0', '0.0', '-']:
                     remuneracao.valor = number.format_element(row[13])
+                    sem_detalhamento = True
                 else:
                     remuneracao.item = str(row[14])
                     remuneracao.valor = number.format_element(row[13])
@@ -128,10 +133,12 @@ def cria_remuneracao(row, categoria):
                 if str(row[15]) in ['0', '0.0', '-']:
                     try:
                         remuneracao.valor = number.format_element(row[16])
+                        sem_detalhamento = True
                     except:
                         continue
                 elif str(row[16]) in ['0', '0.0', '-']:
                     remuneracao.valor = number.format_element(row[15])
+                    sem_detalhamento = True
                 else:
                     remuneracao.item = str(row[16])
                     remuneracao.valor = number.format_element(row[15])
@@ -207,4 +214,4 @@ def parse(data, chave_coleta):
 
     for values in employees.values():
         folha.contra_cheque.append(values)
-    return folha
+    return folha, sem_detalhamento
