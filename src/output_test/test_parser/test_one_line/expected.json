@@ -33,7 +33,8 @@
                     {
                         "natureza": "D",
                         "categoria": "contracheque",
-                        "item": "Retenção por Teto Constitucional"
+                        "item": "Retenção por Teto Constitucional",
+                        "valor": -0.0
                     },
                     {
                         "categoria": "contracheque",

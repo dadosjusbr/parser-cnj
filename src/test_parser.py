@@ -31,8 +31,7 @@ class TestParser(unittest.TestCase):
         dados = load(files, '2018', '01', 'TJRJ', self.test_dir)
         result_data = parse(dados, 'tjrj/01/2018')
         # Converto o resultado do parser, em dict
-        result_to_dict = MessageToDict(result_data, float_precision=2)
-
+        result_to_dict = MessageToDict(result_data[0], float_precision=2)
         self.assertEqual(expected, result_to_dict)
 
     def test_spreadsheet_with_one_line(self):
@@ -50,8 +49,9 @@ class TestParser(unittest.TestCase):
         dados = load(files, '2020', '01', 'TJPI', self.test_dir)
         result_data = parse(dados, 'tjpi/01/2020')
         # Converto o resultado do parser, em dict
-        result_to_dict = MessageToDict(result_data, float_precision=1)
-
+        result_to_dict = MessageToDict(result_data[0], float_precision=1)
+        print(expected)
+        print(result_to_dict)
         self.assertEqual(expected, result_to_dict)
 
     def test_detalhe_com_numeros(self):
@@ -67,7 +67,7 @@ class TestParser(unittest.TestCase):
         folha = parse(dados, 'tjma/01/2020')
 
         # Só checar que não deu erro.
-        self.assertEqual(1, len(folha.contra_cheque))
+        self.assertEqual(1, len(folha[0].contra_cheque))
 
 
 if __name__ == '__main__':
