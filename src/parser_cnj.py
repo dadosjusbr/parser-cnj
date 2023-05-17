@@ -162,13 +162,14 @@ def cria_remuneracao(row, categoria):
     return remu_array, sem_detalhamento
 
 
-def parse_employees(fn, chave_coleta):
+def parse_employees(fn, chave_coleta, court):
     employees = {}
     counter = 1
     for row in fn:
         name = row[1]
         # Usa-se o isNaN para não pegar linhas vázias.
-        if not number.is_nan(name):
+        # A segunda condição verifica se o membro pertence ao órgão.
+        if not number.is_nan(name) and row[0].casefold() == court.casefold():
             membro = Coleta.ContraCheque()
             membro.id_contra_cheque = chave_coleta + "/" + str(counter)
             membro.chave_coleta = chave_coleta
@@ -202,7 +203,7 @@ def parse(data, chave_coleta):
         # Cria a base com o contracheque, depois vai ser atualizado com
         # as outras planilhas.
         contracheques, sem_detalhamento = parse_employees(
-            data.contracheque, chave_coleta)
+            data.contracheque, chave_coleta, data.court)
         employees.update(contracheques)
 
         _, sem_detalhamento = update_employees(
