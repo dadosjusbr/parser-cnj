@@ -47,8 +47,8 @@ def cria_remuneracao(row, categoria):
                 remuneracao.valor = number.format_element(key)
                 sem_detalhamento = True
             else:
-                remuneracao.item = str(value)
-                remuneracao.valor = number.format_element(key)
+                remuneracao.item = str(key)
+                remuneracao.valor = number.format_element(value)
             remu_array.remuneracao.append(remuneracao)
 
         key, value = row[7], row[6]
@@ -67,8 +67,8 @@ def cria_remuneracao(row, categoria):
                 remuneracao.valor = number.format_element(key)
                 sem_detalhamento = True
             else:
-                remuneracao.item = str(value)
-                remuneracao.valor = number.format_element(key)
+                remuneracao.item = str(key)
+                remuneracao.valor = number.format_element(value)
             remu_array.remuneracao.append(remuneracao)
 
         return remu_array, sem_detalhamento
