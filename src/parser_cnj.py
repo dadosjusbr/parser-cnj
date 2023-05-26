@@ -29,32 +29,46 @@ def cria_remuneracao(row, categoria):
         remuneracao.categoria = categoria
         remu_array.remuneracao.append(remuneracao)
 
-        key, value = str(row[5]), row[4]
-        if key not in ['0', '0.0', '-'] or str(value) not in ['0', '0.0', '-']:
+        key, value = row[5], row[4]
+        if str(key) not in ['0', '0.0', '-'] or str(value) not in ['0', '0.0', '-']:
             remuneracao = Coleta.Remuneracao()
             remuneracao.tipo_receita = Coleta.Remuneracao.TipoReceita.Value("O")
             remuneracao.categoria = categoria
             # Alguns órgãos têm informado o valor, mas não o detalhe.
             # Nesses casos, colocaremos "NÃO INFORMADO" como item
-            if key in ['0', '0.0', '-']:
-                remuneracao.item = "NÃO INFORMADO"
+            remuneracao.item = "NÃO INFORMADO"
+            if str(key) in ['0', '0.0', '-']:
+                try:
+                    remuneracao.valor = number.format_element(value)
+                    sem_detalhamento = True
+                except:
+                    pass
+            elif str(value) in ['0', '0.0', '-']:
+                remuneracao.valor = number.format_element(key)
                 sem_detalhamento = True
             else:
-                remuneracao.item = key
-            remuneracao.valor = number.format_element(value)
+                remuneracao.item = str(value)
+                remuneracao.valor = number.format_element(key)
             remu_array.remuneracao.append(remuneracao)
 
-        key, value = str(row[7]), row[6]
-        if key not in ['0', '0.0', '-'] or str(value) not in ['0', '0.0', '-']:
+        key, value = row[7], row[6]
+        if str(key) not in ['0', '0.0', '-'] or str(value) not in ['0', '0.0', '-']:
             remuneracao = Coleta.Remuneracao()
             remuneracao.tipo_receita = Coleta.Remuneracao.TipoReceita.Value("O")
             remuneracao.categoria = categoria
-            if key in ['0', '0.0', '-']:
-                remuneracao.item = "NÃO INFORMADO"
+            remuneracao.item = "NÃO INFORMADO"
+            if str(key) in ['0', '0.0', '-']:
+                try:
+                    remuneracao.valor = number.format_element(value)
+                    sem_detalhamento = True
+                except:
+                    pass
+            elif str(value) in ['0', '0.0', '-']:
+                remuneracao.valor = number.format_element(key)
                 sem_detalhamento = True
             else:
-                remuneracao.item = key
-            remuneracao.valor = number.format_element(value)
+                remuneracao.item = str(value)
+                remuneracao.valor = number.format_element(key)
             remu_array.remuneracao.append(remuneracao)
 
         return remu_array, sem_detalhamento
