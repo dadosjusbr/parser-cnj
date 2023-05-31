@@ -10,6 +10,7 @@ from headers_keys import (CONTRACHEQUE, INDENIZACOES, DIREITOS_PESSOAIS,
                           DIREITOS_EVENTUAIS, HEADERS)
 import number
 
+sem_detalhamento = False
 
 def cria_remuneracao(row, categoria):
     remu_array = Coleta.Remuneracoes()
@@ -19,7 +20,7 @@ def cria_remuneracao(row, categoria):
     a coluna Outras recebe esse valor para o parametro "item" 
     e mantém seu valor para o parametro "valor".
     """
-    sem_detalhamento = False
+    global sem_detalhamento
     if categoria == DIREITOS_PESSOAIS:
         key, value = "Abono de permanência", row[3]
         remuneracao = Coleta.Remuneracao()
@@ -30,20 +31,20 @@ def cria_remuneracao(row, categoria):
         remu_array.remuneracao.append(remuneracao)
 
         key, value = row[5], row[4]
-        if str(key) not in ['0', '0.0', '-'] or str(value) not in ['0', '0.0', '-']:
+        if str(key) not in ['0', '0.0', '-', 'SOMENTE OS CAMPOS DESTACADOS EM VERMELHO DEVERÃO SER PREENCHIDOS.'] or str(value) not in ['0', '0.0', '-']:
             remuneracao = Coleta.Remuneracao()
             remuneracao.tipo_receita = Coleta.Remuneracao.TipoReceita.Value("O")
             remuneracao.categoria = categoria
             # Alguns órgãos têm informado o valor, mas não o detalhe.
             # Nesses casos, colocaremos "NÃO INFORMADO" como item
             remuneracao.item = "NÃO INFORMADO"
-            if str(key) in ['0', '0.0', '-']:
+            if str(key) in ['0', '0.0', '-'] or str(key).replace(",", ".") == str(value):
                 try:
                     remuneracao.valor = number.format_element(value)
                     sem_detalhamento = True
                 except:
                     pass
-            elif str(value) in ['0', '0.0', '-']:
+            elif str(value) in ['0', '0.0', '-'] and key not in ['Reajuste 11,98% URV - (Dec Jud)','Reajuste -Dec Jud']:
                 remuneracao.valor = number.format_element(key)
                 sem_detalhamento = True
             else:
@@ -52,18 +53,18 @@ def cria_remuneracao(row, categoria):
             remu_array.remuneracao.append(remuneracao)
 
         key, value = row[7], row[6]
-        if str(key) not in ['0', '0.0', '-'] or str(value) not in ['0', '0.0', '-']:
+        if str(key) not in ['0', '0.0', '-', 'SOMENTE OS CAMPOS DESTACADOS EM VERMELHO DEVERÃO SER PREENCHIDOS.'] or str(value) not in ['0', '0.0', '-']:
             remuneracao = Coleta.Remuneracao()
             remuneracao.tipo_receita = Coleta.Remuneracao.TipoReceita.Value("O")
             remuneracao.categoria = categoria
             remuneracao.item = "NÃO INFORMADO"
-            if str(key) in ['0', '0.0', '-']:
+            if str(key) in ['0', '0.0', '-'] or str(key).replace(",", ".") == str(value):
                 try:
                     remuneracao.valor = number.format_element(value)
                     sem_detalhamento = True
                 except:
                     pass
-            elif str(value) in ['0', '0.0', '-']:
+            elif str(value) in ['0', '0.0', '-'] and key not in ['Reajuste 11,98% URV - (Dec Jud)','Reajuste -Dec Jud']:
                 remuneracao.valor = number.format_element(key)
                 sem_detalhamento = True
             else:
@@ -83,35 +84,68 @@ def cria_remuneracao(row, categoria):
         if categoria == INDENIZACOES and value in [10, 12, 14]:
             continue
         if categoria == INDENIZACOES and value == 9:
-            if str(row[10]) != '0' and str(row[10]) != '0.0' and str(row[10]) != '-':
+            if str(row[10]) not in ['0', '0.0', '-', 'SOMENTE OS CAMPOS DESTACADOS EM VERMELHO DEVERÃO SER PREENCHIDOS.'] or (str(row[9]) not in ['0', '0.0', '-']):
                 remuneracao = Coleta.Remuneracao()
                 remuneracao.natureza = Coleta.Remuneracao.Natureza.Value("R")
                 remuneracao.tipo_receita = Coleta.Remuneracao.TipoReceita.Value("O")
                 remuneracao.categoria = categoria
-                remuneracao.item = row[10]
-                remuneracao.valor = number.format_element(row[9])
+                remuneracao.item = "NÃO INFORMADO"
+                if str(row[9]) in ['0', '0.0', '-']:
+                    try:
+                        remuneracao.valor = number.format_element(row[10])
+                        sem_detalhamento = True
+                    except:
+                        continue
+                elif str(row[10]) in ['0', '0.0', '-'] or str(row[10]).replace(",", ".") == str(row[9]):
+                    remuneracao.valor = number.format_element(row[9])
+                    sem_detalhamento = True
+                else:
+                    remuneracao.item = str(row[10])
+                    remuneracao.valor = number.format_element(row[9])
                 remu_array.remuneracao.append(remuneracao)
         elif categoria == INDENIZACOES and value == 11:
-            if str(row[12]) != '0' and str(row[12]) != '0.0' and str(row[12]) != '-' and str(row[12]) != '1':
+            if str(row[12]) not in ['0', '0.0', '-', '1', 'SOMENTE OS CAMPOS DESTACADOS EM VERMELHO DEVERÃO SER PREENCHIDOS.'] or (str(row[11]) not in ['0', '0.0', '-']):
                 remuneracao = Coleta.Remuneracao()
                 remuneracao.natureza = Coleta.Remuneracao.Natureza.Value("R")
                 remuneracao.tipo_receita = Coleta.Remuneracao.TipoReceita.Value("O")
                 remuneracao.categoria = categoria
-                remuneracao.item = row[12]
-                remuneracao.valor = number.format_element(row[11])
+                remuneracao.item = "NÃO INFORMADO"
+                if str(row[11]) in ['0', '0.0', '-']:
+                    try:
+                        remuneracao.valor = number.format_element(row[12])
+                        sem_detalhamento = True
+                    except:
+                        continue
+                elif str(row[12]) in ['0', '0.0', '-'] or str(row[12]).replace(",", ".") == str(row[11]):
+                    remuneracao.valor = number.format_element(row[11])
+                    sem_detalhamento = True
+                else:
+                    remuneracao.item = str(row[12])
+                    remuneracao.valor = number.format_element(row[11])
                 remu_array.remuneracao.append(remuneracao)
         elif categoria == INDENIZACOES and value == 13:
-            if str(row[14]) != '0' and str(row[14]) != '0.0' and str(row[14]) != '-':
+            if str(row[14]) not in ['0', '0.0', '-', 'SOMENTE OS CAMPOS DESTACADOS EM VERMELHO DEVERÃO SER PREENCHIDOS.'] or (str(row[13]) not in ['0', '0.0', '-']):
                 remuneracao = Coleta.Remuneracao()
                 remuneracao.natureza = Coleta.Remuneracao.Natureza.Value("R")
                 remuneracao.tipo_receita = Coleta.Remuneracao.TipoReceita.Value("O")
                 remuneracao.categoria = categoria
-                remuneracao.item = row[14]
-                remuneracao.valor = number.format_element(row[13])
+                remuneracao.item = "NÃO INFORMADO"
+                if str(row[13]) in ['0', '0.0', '-']:
+                    try:
+                        remuneracao.valor = number.format_element(row[14])
+                        sem_detalhamento = True
+                    except:
+                        continue
+                elif str(row[14]) in ['0', '0.0', '-'] or str(row[14]).replace(",", ".") == str(row[13]):
+                    remuneracao.valor = number.format_element(row[13])
+                    sem_detalhamento = True
+                else:
+                    remuneracao.item = str(row[14])
+                    remuneracao.valor = number.format_element(row[13])
                 remu_array.remuneracao.append(remuneracao)
         # Se a coluna 'Outra' ou a coluna 'Detalhe' for diferente de 0, será criada a remuneração.
         elif categoria == DIREITOS_EVENTUAIS and value == 13:
-            if (str(row[13]) not in ['0', '0.0', '-']) or (str(row[14]) not in ['0', '0.0', '-']):
+            if ((str(row[13]) not in ['0', '0.0', '-']) or (str(row[14]) not in ['0', '0.0', '-'])) and ';  ;  ;  ;  ;  ;' not in str(row[14]):
                 remuneracao = Coleta.Remuneracao()
                 remuneracao.natureza = Coleta.Remuneracao.Natureza.Value("R")
                 remuneracao.tipo_receita = Coleta.Remuneracao.TipoReceita.Value("O")
@@ -127,7 +161,7 @@ def cria_remuneracao(row, categoria):
                         sem_detalhamento = True
                     except:
                         continue
-                elif str(row[14]) in ['0', '0.0', '-']:
+                elif str(row[14]) in ['0', '0.0', '-'] or str(row[14]).replace(",", ".") == str(row[13]) or '9;' in str(row[14]):
                     remuneracao.valor = number.format_element(row[13])
                     sem_detalhamento = True
                 else:
@@ -149,7 +183,7 @@ def cria_remuneracao(row, categoria):
                         sem_detalhamento = True
                     except:
                         continue
-                elif str(row[16]) in ['0', '0.0', '-']:
+                elif str(row[16]) in ['0', '0.0', '-'] or str(row[16]).replace(",", ".") == str(row[15]):
                     remuneracao.valor = number.format_element(row[15])
                     sem_detalhamento = True
                 else:
