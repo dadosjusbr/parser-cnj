@@ -37,16 +37,23 @@ def cria_remuneracao(row, categoria):
             remuneracao = Coleta.Remuneracao()
             remuneracao.tipo_receita = Coleta.Remuneracao.TipoReceita.Value("O")
             remuneracao.categoria = categoria
-            remuneracao.item, remuneracao.valor = check_details(key, value)
+            remuneracao.item = str(key)
+            remuneracao.valor = number.format_element(value)
             remu_array.remuneracao.append(remuneracao)
+
+            if not bool(re.search('[A-Za-z]', str(key))):
+                sem_detalhamento = True
 
         key, value = row[7], row[6]
         if validate(key, value):
             remuneracao = Coleta.Remuneracao()
             remuneracao.tipo_receita = Coleta.Remuneracao.TipoReceita.Value("O")
-            remuneracao.categoria = categoria
-            remuneracao.item, remuneracao.valor = check_details(key, value)
+            remuneracao.item = str(key)
+            remuneracao.valor = number.format_element(value)
             remu_array.remuneracao.append(remuneracao)
+
+            if not bool(re.search('[A-Za-z]', str(key))):
+                sem_detalhamento = True
 
         return remu_array, sem_detalhamento
 
@@ -65,24 +72,39 @@ def cria_remuneracao(row, categoria):
                 remuneracao.natureza = Coleta.Remuneracao.Natureza.Value("R")
                 remuneracao.tipo_receita = Coleta.Remuneracao.TipoReceita.Value("O")
                 remuneracao.categoria = categoria
-                remuneracao.item, remuneracao.valor = check_details(row[10], row[9])
+                remuneracao.item = str(row[10])
+                remuneracao.valor = number.format_element(row[9])
                 remu_array.remuneracao.append(remuneracao)
+
+                if not bool(re.search('[A-Za-z]', str(row[10]))):
+                    sem_detalhamento = True
+
         elif categoria == INDENIZACOES and value == 11:
             if validate(row[12], row[11]):
                 remuneracao = Coleta.Remuneracao()
                 remuneracao.natureza = Coleta.Remuneracao.Natureza.Value("R")
                 remuneracao.tipo_receita = Coleta.Remuneracao.TipoReceita.Value("O")
                 remuneracao.categoria = categoria
-                remuneracao.item, remuneracao.valor = check_details(row[12], row[11])
+                remuneracao.item = str(row[12])
+                remuneracao.valor = number.format_element(row[11])
                 remu_array.remuneracao.append(remuneracao)
+
+                if not bool(re.search('[A-Za-z]', str(row[12]))):
+                    sem_detalhamento = True
+
         elif categoria == INDENIZACOES and value == 13:
             if validate(row[14], row[13]):
                 remuneracao = Coleta.Remuneracao()
                 remuneracao.natureza = Coleta.Remuneracao.Natureza.Value("R")
                 remuneracao.tipo_receita = Coleta.Remuneracao.TipoReceita.Value("O")
                 remuneracao.categoria = categoria
-                remuneracao.item, remuneracao.valor = check_details(row[14], row[13])
+                remuneracao.item = str(row[14])
+                remuneracao.valor = number.format_element(row[13])
                 remu_array.remuneracao.append(remuneracao)
+
+                if not bool(re.search('[A-Za-z]', str(row[14]))):
+                    sem_detalhamento = True
+
         # Se a coluna 'Outra' ou a coluna 'Detalhe' for diferente de 0, será criada a remuneração.
         elif categoria == DIREITOS_EVENTUAIS and value == 13:
             if validate(row[14], row[13]):
@@ -90,8 +112,13 @@ def cria_remuneracao(row, categoria):
                 remuneracao.natureza = Coleta.Remuneracao.Natureza.Value("R")
                 remuneracao.tipo_receita = Coleta.Remuneracao.TipoReceita.Value("O")
                 remuneracao.categoria = categoria
-                remuneracao.item, remuneracao.valor = check_details(row[14], row[13])
+                remuneracao.item = str(row[14])
+                remuneracao.valor = number.format_element(row[13])
                 remu_array.remuneracao.append(remuneracao)
+
+                if not bool(re.search('[A-Za-z]', str(row[14]))):
+                    sem_detalhamento = True
+
         # Caso seja coluna "Outra" e a coluna "Detalhe" seja diferente de 0,
         # será criada a remuneração.
         elif categoria == DIREITOS_EVENTUAIS and value == 15:
@@ -100,8 +127,13 @@ def cria_remuneracao(row, categoria):
                 remuneracao.natureza = Coleta.Remuneracao.Natureza.Value("R")
                 remuneracao.tipo_receita = Coleta.Remuneracao.TipoReceita.Value("O")
                 remuneracao.categoria = categoria
-                remuneracao.item, remuneracao.valor = check_details(row[16], row[15])
+                remuneracao.item = str(row[16])
+                remuneracao.valor = number.format_element(row[15])
                 remu_array.remuneracao.append(remuneracao)
+
+                if not bool(re.search('[A-Za-z]', str(row[16]))):
+                    sem_detalhamento = True
+
         # Cria a remuneração para as demais categorias que não necessitam
         # de tratamento especial para suas colunas "Outra" e "Detalhe"
         else:
@@ -112,7 +144,7 @@ def cria_remuneracao(row, categoria):
             remuneracao.valor = number.format_element(row[value])
             if categoria == CONTRACHEQUE and value in [8, 9, 10, 11]:
                 remuneracao.natureza = Coleta.Remuneracao.Natureza.Value("D")
-                remuneracao.valor = remuneracao.valor * (-1)
+                remuneracao.valor = abs(remuneracao.valor) * (-1)
             else:
                 remuneracao.tipo_receita = Coleta.Remuneracao.TipoReceita.Value("O")
             if categoria == CONTRACHEQUE and value == 3:
@@ -186,17 +218,19 @@ def parse(data, chave_coleta):
     return folha, sem_detalhamento
 
 
-# Em abril/2023 percebemos que alguns órgãos têm colocado o valor na coluna 'Detalhe'
-# e não informando a descrição do respectivo gasto
-# Alguns órgãos tbm têm colocado o valor na própria coluna, 'Outra', mas tbm não informando o 'Detalhe'
-# Ainda outros têm colocado o valor da remuneração em ambas colunas.
-# Nesses casos, consideraremos o valor e receberemos "NÃO INFORMADO" como item
 def validate(key, value) -> bool:
-    if str(key) not in ['0', '0.0', '-', 'SOMENTE OS CAMPOS DESTACADOS EM VERMELHO DEVERÃO SER PREENCHIDOS.'] or str(value) not in ['0', '0.0', '-']:
+    if str(key) not in ['0', '0.0', '-'] or str(value) not in ['0', '0.0', '-']:
         return True
     else:
         return False
 
+# Em abril/2023 percebemos que alguns órgãos têm colocado o valor na coluna 'Detalhe'
+# e não informando a descrição do respectivo gasto
+# Alguns órgãos tbm têm colocado o valor na própria coluna, 'Outra', mas tbm não informando o 'Detalhe'
+# Ainda outros têm colocado o valor da remuneração em ambas colunas.
+# Nesses casos, consideramos o valor e recebemos "NÃO INFORMADO" como item
+# Em junho/2023, decidimos manter as planilhas com os erros de detalhamento.
+# Portanto, essa função não está mais sendo utilizada, estando aqui para posteriores consultas.
 def check_details(key, value):
     global sem_detalhamento
     item = "NÃO INFORMADO"
