@@ -154,14 +154,15 @@ def cria_remuneracao(row, categoria):
     return remu_array, sem_detalhamento
 
 
-def parse_employees(fn, chave_coleta, court):
+def parse_employees(fn, chave_coleta, court, month, year):
     employees = {}
     counter = 1
     for row in fn:
         name = row[1]
         # Usa-se o isNaN para não pegar linhas vázias.
         # A segunda condição verifica se o membro pertence ao órgão.
-        if not number.is_nan(name) and row[0].casefold() == court.casefold():
+        # A terceira condição verifica se o dado pertece ao mês correspondente
+        if not number.is_nan(name) and row[0].casefold() == court.casefold() and row[2] == f'{int(month):02}/{year}':
             membro = Coleta.ContraCheque()
             membro.id_contra_cheque = chave_coleta + "/" + str(counter)
             membro.chave_coleta = chave_coleta
@@ -176,10 +177,10 @@ def parse_employees(fn, chave_coleta, court):
     return employees, sem_detalhamento
 
 # Atualiza os dados que foram passados no segundo parâmetro
-def update_employees(data, employees, categoria):
+def update_employees(data, employees, categoria, month, year):
     for row in data:
         name = row[1]
-        if name in employees.keys():
+        if name in employees.keys() and row[2] == f'{int(month):02}/{year}':
             emp = employees[name]
             remu, sem_detalhamento = cria_remuneracao(row, categoria)
             emp.remuneracoes.MergeFrom(remu)
@@ -195,17 +196,17 @@ def parse(data, chave_coleta):
         # Cria a base com o contracheque, depois vai ser atualizado com
         # as outras planilhas.
         contracheques, sem_detalhamento = parse_employees(
-            data.contracheque, chave_coleta, data.court)
+            data.contracheque, chave_coleta, data.court, data.month, data.year)
         employees.update(contracheques)
 
         _, sem_detalhamento = update_employees(
-            data.indenizacoes, employees, INDENIZACOES)
+            data.indenizacoes, employees, INDENIZACOES, data.month, data.year)
 
         _, sem_detalhamento = update_employees(
-            data.direitos_eventuais, employees, DIREITOS_EVENTUAIS)
+            data.direitos_eventuais, employees, DIREITOS_EVENTUAIS, data.month, data.year)
 
         _, sem_detalhamento = update_employees(
-            data.direitos_pessoais, employees, DIREITOS_PESSOAIS)
+            data.direitos_pessoais, employees, DIREITOS_PESSOAIS, data.month, data.year)
 
     except KeyError as error:
         sys.stderr.write(
