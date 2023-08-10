@@ -5,13 +5,13 @@ DIREITOS_PESSOAIS = "direitos-pessoais"
 
 HEADERS = {
     CONTRACHEQUE: {
-        "Subsídio": 3,
-        "Previdência Pública": 8,
-        "Imposto de renda": 9,
-        "Descontos Diversos": 10,
-        "Retenção por Teto Constitucional": 11,
-        "Remuneração do órgão de origem ": 14,
-        "Diárias": 15,
+        "Subsídio": 5,
+        "Previdência Pública": 10,
+        "Imposto de renda": 11,
+        "Descontos Diversos": 12,
+        "Retenção por Teto Constitucional": 13,
+        "Remuneração do órgão de origem ": 16,
+        "Diárias": 17,
     },
     INDENIZACOES: {
         "Auxílio-alimentação": 3,
