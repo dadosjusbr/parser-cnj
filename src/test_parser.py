@@ -50,8 +50,6 @@ class TestParser(unittest.TestCase):
         result_data = parse(dados, 'tjpi/01/2020')
         # Converto o resultado do parser, em dict
         result_to_dict = MessageToDict(result_data[0], float_precision=1)
-        print(expected)
-        print(result_to_dict)
         self.assertEqual(expected, result_to_dict)
 
     def test_detalhe_com_numeros(self):
