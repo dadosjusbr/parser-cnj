@@ -142,12 +142,12 @@ def cria_remuneracao(row, categoria):
             remuneracao.categoria = categoria
             remuneracao.item = key
             remuneracao.valor = number.format_element(row[value])
-            if categoria == CONTRACHEQUE and value in [8, 9, 10, 11]:
+            if categoria == CONTRACHEQUE and value in [10, 11, 12, 13]:
                 remuneracao.natureza = Coleta.Remuneracao.Natureza.Value("D")
                 remuneracao.valor = abs(remuneracao.valor) * (-1)
             else:
                 remuneracao.tipo_receita = Coleta.Remuneracao.TipoReceita.Value("O")
-            if categoria == CONTRACHEQUE and value == 3:
+            if categoria == CONTRACHEQUE and value == 5:
                 remuneracao.tipo_receita = Coleta.Remuneracao.TipoReceita.Value("B")
             remu_array.remuneracao.append(remuneracao)
 
@@ -169,6 +169,8 @@ def parse_employees(fn, chave_coleta, court, month, year):
             membro.nome = str(name)  # Para o caso do campo vier com um int
             membro.tipo = Coleta.ContraCheque.Tipo.Value("MEMBRO")
             membro.ativo = True
+            membro.funcao = row[3]
+            membro.local_trabalho = row[4]
             contracheques, sem_detalhamento = cria_remuneracao(
                 row, CONTRACHEQUE)
             membro.remuneracoes.CopyFrom(contracheques)

@@ -3,6 +3,8 @@
         {
             "idContraCheque": "tjrj/01/2018/1",
             "chaveColeta": "tjrj/01/2018",
+            "funcao": "DESEMBARGADOR",
+            "localTrabalho": "TRIBUNAL DE JUSTICA 8 CAMARA CIVEL - 1",
             "nome": "ADRIANO CELSO GUIMARAES",
             "ativo": true,
             "remuneracoes": {
