@@ -35,22 +35,18 @@ class TestParser(unittest.TestCase):
         self.assertEqual(expected, result_to_dict)
 
     def test_spreadsheet_with_one_line(self):
-        self.maxDiff = None
-        # Json com a saida esperada
-        with open('src/output_test/test_parser/test_one_line/expected.json', 'r') as fp:
-            expected = json.load(fp)
+        # Em caso de dados sumarizados, haverá um erro de SystemExit(4)
+        with self.assertRaises(SystemExit):
+            self.maxDiff = None
 
-        files = ['src/output_test/test_parser/test_one_line/contracheque-tjpi-2020-01.xlsx',
-                 'src/output_test/test_parser/test_one_line/direitos-eventuais-tjpi-2020-01.xlsx',
-                 'src/output_test/test_parser/test_one_line/direitos-pessoais-tjpi-2020-01.xlsx',
-                 'src/output_test/test_parser/test_one_line/indenizacoes-tjpi-2020-01.xlsx',
-                 'src/output_test/test_parser/test_one_line/controle-de-arquivos-tjpi-2020-01.xlsx']
+            files = ['src/output_test/test_parser/test_one_line/contracheque-tjpi-2020-01.xlsx',
+                     'src/output_test/test_parser/test_one_line/direitos-eventuais-tjpi-2020-01.xlsx',
+                     'src/output_test/test_parser/test_one_line/direitos-pessoais-tjpi-2020-01.xlsx',
+                     'src/output_test/test_parser/test_one_line/indenizacoes-tjpi-2020-01.xlsx',
+                     'src/output_test/test_parser/test_one_line/controle-de-arquivos-tjpi-2020-01.xlsx']
 
-        dados = load(files, '2020', '01', 'TJPI', self.test_dir)
-        result_data = parse(dados, 'tjpi/01/2020')
-        # Converto o resultado do parser, em dict
-        result_to_dict = MessageToDict(result_data[0], float_precision=1)
-        self.assertEqual(expected, result_to_dict)
+            dados = load(files, '2020', '01', 'TJPI', self.test_dir)
+            result_data = parse(dados, 'tjpi/01/2020')
 
     def test_detalhe_com_numeros(self):
         # A planilha de direitos eventuais tem um campo detalhe com um número.
