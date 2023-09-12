@@ -10,6 +10,7 @@ from headers_keys import (CONTRACHEQUE, INDENIZACOES, DIREITOS_PESSOAIS,
                           DIREITOS_EVENTUAIS, HEADERS)
 import number
 import re
+from data import STATUS_DATA_UNAVAILABLE
 
 
 sem_detalhamento = False
@@ -163,14 +164,18 @@ def parse_employees(fn, chave_coleta, court, month, year):
         # A segunda condição verifica se o membro pertence ao órgão.
         # A terceira condição verifica se o dado pertece ao mês correspondente
         if not number.is_nan(name) and row[0].casefold() == court.casefold() and row[2] == f'{int(month):02}/{year}':
+            if name in (0,'0'):
+                sys.stderr.write(f"Dados de contracheque sumarizados.")
+                sys.exit(STATUS_DATA_UNAVAILABLE)
+
             membro = Coleta.ContraCheque()
             membro.id_contra_cheque = chave_coleta + "/" + str(counter)
             membro.chave_coleta = chave_coleta
             membro.nome = str(name)  # Para o caso do campo vier com um int
             membro.tipo = Coleta.ContraCheque.Tipo.Value("MEMBRO")
             membro.ativo = True
-            membro.funcao = row[3]
-            membro.local_trabalho = row[4]
+            membro.funcao = str(row[3])
+            membro.local_trabalho = str(row[4])
             contracheques, sem_detalhamento = cria_remuneracao(
                 row, CONTRACHEQUE)
             membro.remuneracoes.CopyFrom(contracheques)
