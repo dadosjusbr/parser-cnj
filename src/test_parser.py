@@ -36,7 +36,7 @@ class TestParser(unittest.TestCase):
 
     def test_spreadsheet_with_one_line(self):
         # Em caso de dados sumarizados, haverá um erro de SystemExit(4)
-        with self.assertRaises(SystemExit):
+        with self.assertRaises(SystemExit) as err:
             self.maxDiff = None
 
             files = ['src/output_test/test_parser/test_one_line/contracheque-tjpi-2020-01.xlsx',
@@ -47,6 +47,9 @@ class TestParser(unittest.TestCase):
 
             dados = load(files, '2020', '01', 'TJPI', self.test_dir)
             result_data = parse(dados, 'tjpi/01/2020')
+
+        exc = err.exception
+        self.assertEqual(exc.code, 4)
 
     def test_detalhe_com_numeros(self):
         # A planilha de direitos eventuais tem um campo detalhe com um número.
