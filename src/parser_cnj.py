@@ -49,6 +49,7 @@ def cria_remuneracao(row, categoria):
         if validate(key, value):
             remuneracao = Coleta.Remuneracao()
             remuneracao.tipo_receita = Coleta.Remuneracao.TipoReceita.Value("O")
+            remuneracao.categoria = categoria
             remuneracao.item = str(key)
             remuneracao.valor = number.format_element(value)
             remu_array.remuneracao.append(remuneracao)
