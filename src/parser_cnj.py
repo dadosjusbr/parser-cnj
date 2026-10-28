@@ -5,6 +5,7 @@ import os
 
 import pandas as pd
 from coleta import coleta_pb2 as Coleta
+from openpyxl.utils.escape import unescape
 
 from headers_keys import (CONTRACHEQUE, INDENIZACOES, DIREITOS_PESSOAIS,
                           DIREITOS_EVENTUAIS, HEADERS)
@@ -38,11 +39,11 @@ def cria_remuneracao(row, categoria):
             remuneracao = Coleta.Remuneracao()
             remuneracao.tipo_receita = Coleta.Remuneracao.TipoReceita.Value("O")
             remuneracao.categoria = categoria
-            remuneracao.item = str(key)
+            remuneracao.item = formata_item(key)
             remuneracao.valor = number.format_element(value)
             remu_array.remuneracao.append(remuneracao)
 
-            if not bool(re.search('[A-Za-z]', str(key))):
+            if not bool(re.search('[A-Za-z]', formata_item(key))):
                 sem_detalhamento = True
 
         key, value = row[7], row[6]
@@ -50,11 +51,11 @@ def cria_remuneracao(row, categoria):
             remuneracao = Coleta.Remuneracao()
             remuneracao.tipo_receita = Coleta.Remuneracao.TipoReceita.Value("O")
             remuneracao.categoria = categoria
-            remuneracao.item = str(key)
+            remuneracao.item = formata_item(key)
             remuneracao.valor = number.format_element(value)
             remu_array.remuneracao.append(remuneracao)
 
-            if not bool(re.search('[A-Za-z]', str(key))):
+            if not bool(re.search('[A-Za-z]', formata_item(key))):
                 sem_detalhamento = True
 
         return remu_array, sem_detalhamento
@@ -74,11 +75,11 @@ def cria_remuneracao(row, categoria):
                 remuneracao.natureza = Coleta.Remuneracao.Natureza.Value("R")
                 remuneracao.tipo_receita = Coleta.Remuneracao.TipoReceita.Value("O")
                 remuneracao.categoria = categoria
-                remuneracao.item = str(row[10])
+                remuneracao.item = formata_item(row[10])
                 remuneracao.valor = number.format_element(row[9])
                 remu_array.remuneracao.append(remuneracao)
 
-                if not bool(re.search('[A-Za-z]', str(row[10]))):
+                if not bool(re.search('[A-Za-z]', formata_item(row[10]))):
                     sem_detalhamento = True
 
         elif categoria == INDENIZACOES and value == 11:
@@ -87,11 +88,11 @@ def cria_remuneracao(row, categoria):
                 remuneracao.natureza = Coleta.Remuneracao.Natureza.Value("R")
                 remuneracao.tipo_receita = Coleta.Remuneracao.TipoReceita.Value("O")
                 remuneracao.categoria = categoria
-                remuneracao.item = str(row[12])
+                remuneracao.item = formata_item(row[12])
                 remuneracao.valor = number.format_element(row[11])
                 remu_array.remuneracao.append(remuneracao)
 
-                if not bool(re.search('[A-Za-z]', str(row[12]))):
+                if not bool(re.search('[A-Za-z]', formata_item(row[12]))):
                     sem_detalhamento = True
 
         elif categoria == INDENIZACOES and value == 13:
@@ -100,11 +101,11 @@ def cria_remuneracao(row, categoria):
                 remuneracao.natureza = Coleta.Remuneracao.Natureza.Value("R")
                 remuneracao.tipo_receita = Coleta.Remuneracao.TipoReceita.Value("O")
                 remuneracao.categoria = categoria
-                remuneracao.item = str(row[14])
+                remuneracao.item = formata_item(row[14])
                 remuneracao.valor = number.format_element(row[13])
                 remu_array.remuneracao.append(remuneracao)
 
-                if not bool(re.search('[A-Za-z]', str(row[14]))):
+                if not bool(re.search('[A-Za-z]', formata_item(row[14]))):
                     sem_detalhamento = True
 
         # Se a coluna 'Outra' ou a coluna 'Detalhe' for diferente de 0, será criada a remuneração.
@@ -114,11 +115,11 @@ def cria_remuneracao(row, categoria):
                 remuneracao.natureza = Coleta.Remuneracao.Natureza.Value("R")
                 remuneracao.tipo_receita = Coleta.Remuneracao.TipoReceita.Value("O")
                 remuneracao.categoria = categoria
-                remuneracao.item = str(row[14])
+                remuneracao.item = formata_item(row[14])
                 remuneracao.valor = number.format_element(row[13])
                 remu_array.remuneracao.append(remuneracao)
 
-                if not bool(re.search('[A-Za-z]', str(row[14]))):
+                if not bool(re.search('[A-Za-z]', formata_item(row[14]))):
                     sem_detalhamento = True
 
         # Caso seja coluna "Outra" e a coluna "Detalhe" seja diferente de 0,
@@ -129,11 +130,11 @@ def cria_remuneracao(row, categoria):
                 remuneracao.natureza = Coleta.Remuneracao.Natureza.Value("R")
                 remuneracao.tipo_receita = Coleta.Remuneracao.TipoReceita.Value("O")
                 remuneracao.categoria = categoria
-                remuneracao.item = str(row[16])
+                remuneracao.item = formata_item(row[16])
                 remuneracao.valor = number.format_element(row[15])
                 remu_array.remuneracao.append(remuneracao)
 
-                if not bool(re.search('[A-Za-z]', str(row[16]))):
+                if not bool(re.search('[A-Za-z]', formata_item(row[16]))):
                     sem_detalhamento = True
 
         # Cria a remuneração para as demais categorias que não necessitam
@@ -226,6 +227,11 @@ def parse(data, chave_coleta):
         folha.contra_cheque.append(values)
     return folha, sem_detalhamento
 
+
+# O xlsx grava caracteres de controle como '_xHHHH_' (ex.: '_x000D_' é o CR).
+# O openpyxl não desfaz esse escape na leitura; aqui o valor volta a ser o original.
+def formata_item(item):
+    return unescape(str(item))
 
 def validate(key, value) -> bool:
     if str(key) not in ['0', '0.0', '-'] or str(value) not in ['0', '0.0', '-']:
