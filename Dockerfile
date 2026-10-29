@@ -1,5 +1,5 @@
 # set base image (host OS)
-FROM python:3.8-slim-buster
+FROM python:3.10-slim-bookworm
 
 RUN apt-get update \
  && apt-get install -y --no-install-recommends ca-certificates

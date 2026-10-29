@@ -6,7 +6,8 @@ import tempfile
 from google.protobuf.json_format import MessageToDict
 
 from data import load
-from parser_cnj import parse
+from headers_keys import INDENIZACOES
+from parser_cnj import parse, cria_remuneracao
 
 
 class TestParser(unittest.TestCase):
@@ -65,6 +66,16 @@ class TestParser(unittest.TestCase):
 
         # Só checar que não deu erro.
         self.assertEqual(1, len(folha[0].contra_cheque))
+
+    def test_detalhe_com_quebra_de_linha(self):
+        # O painel exporta o CR do campo "Detalhe" como '_x000D_'; o item deve trazer o CR original.
+        row = ['TJGO', 'MAGISTRADO', '09/2026', 0, 0, 0, 0, 0, 0,
+               20911.27, '- PVTAC,_x000D_GECJAO', 0, 0, 0, 0, 20911.27]
+        remuneracoes, _ = cria_remuneracao(row, INDENIZACOES)
+
+        itens = [r.item for r in remuneracoes.remuneracao]
+        self.assertIn('- PVTAC,\rGECJAO', itens)
+        self.assertFalse(any('_x000D_' in item for item in itens))
 
 
 if __name__ == '__main__':
