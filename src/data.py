@@ -4,6 +4,7 @@ Pode ser visto aqui: https://github.com/dadosjusbr/coletor-cnj
 import sys
 import os
 import subprocess
+import unicodedata
 
 import pandas as pd
 
@@ -13,13 +14,49 @@ STATUS_DATA_UNAVAILABLE = 4
 STATUS_INVALID_FILE = 5
 
 
-def _read(file):
+# O parser lê as colunas pela posição (headers_keys.HEADERS). Se o painel mudar a ordem
+# ou o número de colunas, os valores iriam para os itens errados sem nenhum erro.
+CABECALHOS = {
+    "contracheque": ["tribunal", "magistrado", "mes/ano", "cargo", "lotacao", "subsidio",
+                     "direitos pessoais", "indenizacoes", "direitos eventuais", "total de rendimentos",
+                     "previdencia", "imposto de renda", "descontos diversos", "retencao por teto",
+                     "total de descontos", "rendimento liquido", "remuneracao do orgao de origem", "diarias"],
+    "indenizacoes": ["tribunal", "magistrado", "mes/ano", "auxilio-alimentacao", "auxilio pre-escolar",
+                     "auxilio saude", "auxilio natalidade", "auxilio moradia", "ajuda de custo",
+                     "outra", "detalhe", "outra", "detalhe", "outra", "detalhe", "total"],
+    "direitos-eventuais": ["tribunal", "magistrado", "mes/ano", "abono constitucional", "indenizacao de ferias",
+                           "antecipacao de ferias", "gratificacao natalina", "antecipacao de gratificacao natalina",
+                           "substituicao", "gratificacao por exercicio cumulativo", "gratificacao por encargo",
+                           "pagamentos retroativos", "jeton", "outra", "detalhe", "outra", "detalhe", "total"],
+    "direitos-pessoais": ["tribunal", "magistrado", "mes/ano", "abono de permanencia",
+                          "outra", "detalhe", "outra", "detalhe", "total"],
+}
+
+
+def _normaliza(texto):
+    texto = unicodedata.normalize("NFKD", str(texto))
+    return "".join(c for c in texto if not unicodedata.combining(c)).strip().lower()
+
+
+def _confere_cabecalho(colunas, tipo, file):
+    """Encerra com 'arquivo inválido' se as colunas não forem as esperadas, na mesma ordem."""
+    esperado = CABECALHOS.get(tipo)
+    if esperado is None:
+        return
+    colunas = [_normaliza(c) for c in colunas]
+    if len(colunas) != len(esperado) or any(not c.startswith(e) for c, e in zip(colunas, esperado)):
+        sys.stderr.write(f"Cabeçalho inesperado em {file}: {list(colunas)}")
+        sys.exit(STATUS_INVALID_FILE)
+
+
+def _read(file, tipo=None):
     try:
-        data = pd.read_excel(file, engine="openpyxl").to_numpy()
+        df = pd.read_excel(file, engine="openpyxl")
     except Exception as excep:
         print(f"Erro lendo as planilhas: {excep}", file=sys.stderr)
         sys.exit(STATUS_INVALID_FILE)
-    return data
+    _confere_cabecalho(df.columns, tipo, file)
+    return df.to_numpy()
 
 
 def _convert_file(file, output_path):
@@ -57,10 +94,10 @@ def load(file_names, year, month, court, output_path):
     :return um objeto Data() pronto para operar com os arquivos
     """
 
-    contracheque = _read(_convert_file(_arquivo(file_names, "contracheque"), output_path))
-    indenizacoes = _read(_convert_file(_arquivo(file_names, "indenizacoes"), output_path))
-    direitos_eventuais = _read(_convert_file(_arquivo(file_names, "direitos-eventuais"), output_path))
-    direitos_pessoais = _read(_convert_file(_arquivo(file_names, "direitos-pessoais"), output_path))
+    contracheque = _read(_convert_file(_arquivo(file_names, "contracheque"), output_path), "contracheque")
+    indenizacoes = _read(_convert_file(_arquivo(file_names, "indenizacoes"), output_path), "indenizacoes")
+    direitos_eventuais = _read(_convert_file(_arquivo(file_names, "direitos-eventuais"), output_path), "direitos-eventuais")
+    direitos_pessoais = _read(_convert_file(_arquivo(file_names, "direitos-pessoais"), output_path), "direitos-pessoais")
     controle_de_arquivos = _read(_convert_file(_arquivo(file_names, "controle-de-arquivos"), output_path))
 
     return Data(
@@ -128,6 +165,14 @@ class Data:
         # de processamento do CNJ assume detalhe.
         # A coluna Magistrado possui valor '0' quando os dados estão sumarizados, não consideramos os dados se esse for o caso.
         # Discussão em: https://github.com/dadosjusbr/parser-cnj/issues/32
-        if len(self.contracheque) == 1 or self.contracheque[0][1] in (0,'0'):
+        # Olha só as linhas do próprio órgão: no arquivo misturado do coletor antigo, a
+        # primeira linha podia ser de outro tribunal, e um órgão com um só magistrado
+        # (uma linha) não está necessariamente sumarizado.
+        linhas = [r for r in self.contracheque
+                  if isinstance(r[0], str) and r[0].strip().casefold() == self.court.strip().casefold()]
+        if not linhas:
+            sys.stderr.write(f"Nenhuma linha de {self.court} no contracheque.")
+            sys.exit(STATUS_INVALID_FILE)
+        if any(r[1] in (0, '0') for r in linhas):
             sys.stderr.write(f"Dados de contracheque sumarizados.")
             sys.exit(STATUS_DATA_UNAVAILABLE)

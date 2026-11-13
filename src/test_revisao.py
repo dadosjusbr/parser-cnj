@@ -93,6 +93,28 @@ class TestRevisao(unittest.TestCase):
         folha, _ = parse(d, 'trt1/03/2026')
         self.assertEqual(1, len(folha.contra_cheque))
 
+    def test_cabecalho_fora_de_ordem(self):
+        colunas = ['Tribunal', 'Magistrado', 'Mês/Ano Ref.', 'Abono de permanência (R$)', 'Detalhe',
+                   'Outra (R$)', 'Outra (R$).1', 'Detalhe.1', 'Total de Direitos Pessoais']
+        with self.assertRaises(SystemExit) as cm:
+            data._confere_cabecalho(colunas, 'direitos-pessoais', 'x.xlsx')
+        self.assertEqual(data.STATUS_INVALID_FILE, cm.exception.code)
+        data._confere_cabecalho(['Tribunal', 'Magistrado', 'Mês/Ano Ref.', 'Abono de permanência (R$)', 'Outra (R$)',
+                                 'Detalhe', 'Outra (R$).1', 'Detalhe.1', 'Total de Direitos Pessoais'],
+                                'direitos-pessoais', 'x.xlsx')
+
+    def test_um_magistrado_detalhado_nao_e_sumarizado(self):
+        controle = [['TRT1', '03/2026', 'TRT1_03_26.xls 01/04/2026', 1, 1, 1, 1]]
+        d = data.Data([cc('TRT1', 'FULANO', '03/2026', 'JUIZ', 1000.0)], [], [], [], controle, '2026', '03', 'trt1')
+        d.validate()
+
+    def test_linha_sumarizada_do_orgao(self):
+        controle = [['TRT1', '03/2026', 'TRT1_03_26.xls 01/04/2026', 1, 1, 1, 1]]
+        d = data.Data([cc('TRT1', '0', '03/2026', '0', 1000.0)], [], [], [], controle, '2026', '03', 'trt1')
+        with self.assertRaises(SystemExit) as cm:
+            d.validate()
+        self.assertEqual(data.STATUS_DATA_UNAVAILABLE, cm.exception.code)
+
 
 if __name__ == '__main__':
     unittest.main()
