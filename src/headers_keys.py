@@ -18,6 +18,14 @@ TOTAL_DA_CATEGORIA = {
     DIREITOS_PESSOAIS: 8,
 }
 
+# Colunas de valor de cada planilha de categoria: as colunas simples e os pares (Outra, Detalhe).
+# Usadas para calcular o total da linha quando a coluna Total vem zerada (TJDFT, TJMA, TJSC, TJSE).
+VALORES_DA_CATEGORIA = {
+    INDENIZACOES: ([3, 4, 5, 6, 7, 8], [(9, 10), (11, 12), (13, 14)]),
+    DIREITOS_EVENTUAIS: (list(range(3, 13)), [(13, 14), (15, 16)]),
+    DIREITOS_PESSOAIS: ([3], [(4, 5), (6, 7)]),
+}
+
 HEADERS = {
     CONTRACHEQUE: {
         "Subsídio": 5,

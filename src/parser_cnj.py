@@ -9,7 +9,7 @@ from openpyxl.utils.escape import unescape
 
 from headers_keys import (CONTRACHEQUE, INDENIZACOES, DIREITOS_PESSOAIS,
                           DIREITOS_EVENTUAIS, HEADERS, TOTAL_NO_CONTRACHEQUE,
-                          TOTAL_DA_CATEGORIA)
+                          TOTAL_DA_CATEGORIA, VALORES_DA_CATEGORIA)
 import number
 import re
 from data import STATUS_DATA_UNAVAILABLE, STATUS_INVALID_FILE
@@ -205,30 +205,71 @@ def total(valor):
     return round(number.format_element(valor), 2)
 
 
+def _sem_detalhe(detalhe):
+    return number.is_nan(detalhe) or str(detalhe).strip() in ('', '0', '0.0', '-')
+
+
+# Totais possíveis da linha, do mais confiável ao menos confiável, sem zeros nem repetições:
+# a coluna Total; a soma das colunas de valor sem as colunas Outra sem Detalhe (o painel
+# repete ali o valor da linha, F9); a soma de todas as colunas de valor. A coluna Total vem
+# zerada em tribunais inteiros (TJDFT, TJMA, TJSC, TJSE).
+def totais_da_linha(row, categoria):
+    simples, pares = VALORES_DA_CATEGORIA[categoria]
+    soma_simples = sum(total(row[i]) for i in simples)
+    soma_outras = sum(total(row[i]) for i, _ in pares)
+    soma_outras_detalhadas = sum(total(row[i]) for i, d in pares if not _sem_detalhe(row[d]))
+    candidatos = [total(row[TOTAL_DA_CATEGORIA[categoria]]),
+                  round(soma_simples + soma_outras_detalhadas, 2),
+                  round(soma_simples + soma_outras, 2)]
+    return [t for k, t in enumerate(candidatos) if t != 0 and t not in candidatos[:k]]
+
+
+# Vínculo cujo saldo é igual a um dos totais possíveis da linha (e desconta o saldo), ou None.
+def vinculo_exato(row, categoria, saldos):
+    for t in totais_da_linha(row, categoria):
+        for i, saldo in enumerate(saldos):
+            if abs(saldo - t) < 0.01:
+                saldos[i] = round(saldo - t, 2)
+                return i
+    return None
+
+
 # Escolhe o vínculo que recebe a linha de uma planilha de categoria quando o nome se repete.
-# 1) o vínculo livre cujo total da categoria no contracheque é igual ao total da linha;
-# 2) se o total da linha é a soma de todos os vínculos, o painel juntou os vínculos numa
-#    linha só: ela fica no primeiro vínculo;
-# 3) senão, segue a ordem das linhas.
-def escolhe_vinculo(row, vinculos, categoria, usados):
-    total_linha = total(row[TOTAL_DA_CATEGORIA[categoria]])
-    totais = [total(cc_row[TOTAL_NO_CONTRACHEQUE[categoria]]) for _, cc_row in vinculos]
-    livres = [i for i in range(len(vinculos)) if i not in usados]
-    for i in livres:
-        if abs(totais[i] - total_linha) < 0.01:
-            return i
-    if total_linha != 0 and abs(sum(totais) - total_linha) < 0.01:
-        sys.stderr.write(f"Aviso: {row[1]} ({categoria}) tem uma linha só para {len(vinculos)} vínculos.\n")
-        return 0
-    if total_linha != 0:
-        sys.stderr.write(f"Aviso: {row[1]} ({categoria}) associado pela ordem das linhas.\n")
-    return livres[0] if livres else 0
+# saldos[i] é o total da categoria no contracheque do vínculo i menos o que ele já recebeu, e
+# é atualizado aqui. Para cada total possível da linha, em ordem:
+# 1) o vínculo cujo saldo é igual ao total da linha;
+# 2) se o total da linha é a soma dos saldos, o painel juntou os vínculos numa linha só: ela
+#    fica no primeiro vínculo, com aviso (decisão D1);
+# 3) se a linha só cabe no saldo de um vínculo, é parte dele (o painel novo divide um vínculo
+#    em várias linhas, uma por texto de Detalhe);
+# 4) senão, o primeiro vínculo com saldo, com aviso.
+def escolhe_vinculo(row, categoria, saldos):
+    totais = totais_da_linha(row, categoria)
+    if not totais:
+        return 0  # linha sem valores: não muda nenhum vínculo
+    i = vinculo_exato(row, categoria, saldos)
+    if i is not None:
+        return i
+    for t in totais:
+        if abs(sum(saldos) - t) < 0.01:
+            sys.stderr.write(f"Aviso: {row[1]} ({categoria}) tem uma linha só para {len(saldos)} vínculos.\n")
+            saldos[:] = [0.0] * len(saldos)
+            return 0
+    for t in totais:
+        cabem = [i for i, saldo in enumerate(saldos) if saldo - t > -0.01]
+        if len(cabem) == 1:
+            saldos[cabem[0]] = round(saldos[cabem[0]] - t, 2)
+            return cabem[0]
+    sys.stderr.write(f"Aviso: {row[1]} ({categoria}) associado pela ordem das linhas.\n")
+    i = next((k for k, saldo in enumerate(saldos) if saldo > 0), 0)
+    saldos[i] = round(saldos[i] - totais[0], 2)
+    return i
 
 
 # Acrescenta aos contracheques os itens de uma planilha de categoria.
 def update_employees(data, employees, categoria, court, month, year):
     global sem_detalhamento
-    usados = {}
+    repetidos = {}  # nome -> linhas, para nomes com mais de um vínculo
     for row in data:
         name = row[1]
         if not no_recorte(row, court, month, year):
@@ -237,12 +278,29 @@ def update_employees(data, employees, categoria, court, month, year):
             sys.stderr.write(f"Aviso: {name} está em {categoria} e não está no contracheque.\n")
             continue
         vinculos = employees[name]
-        i = 0
         if len(vinculos) > 1:
-            i = escolhe_vinculo(row, vinculos, categoria, usados.setdefault(name, set()))
-            usados[name].add(i)
+            repetidos.setdefault(name, []).append(row)
+            continue
         remu, sem_detalhamento = cria_remuneracao(row, categoria)
-        vinculos[i][0].remuneracoes.MergeFrom(remu)
+        vinculos[0][0].remuneracoes.MergeFrom(remu)
+
+    # Nomes repetidos: primeiro as linhas que batem exatamente com o saldo de um vínculo, depois
+    # as demais. Assim uma linha que não bate com nada não ocupa o vínculo de outra que bate.
+    for name, linhas in repetidos.items():
+        vinculos = employees[name]
+        saldos = [total(cc_row[TOTAL_NO_CONTRACHEQUE[categoria]]) for _, cc_row in vinculos]
+        restantes = []
+        for row in linhas:
+            i = vinculo_exato(row, categoria, saldos)
+            if i is None:
+                restantes.append(row)
+                continue
+            remu, sem_detalhamento = cria_remuneracao(row, categoria)
+            vinculos[i][0].remuneracoes.MergeFrom(remu)
+        for row in restantes:
+            i = escolhe_vinculo(row, categoria, saldos)
+            remu, sem_detalhamento = cria_remuneracao(row, categoria)
+            vinculos[i][0].remuneracoes.MergeFrom(remu)
     return employees, sem_detalhamento
 
 

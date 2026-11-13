@@ -143,6 +143,67 @@ class TestRevisao(unittest.TestCase):
         soma = sum(v for (c, _), v in itens(folha.contra_cheque[0]).items() if c == 'direitos-pessoais')
         self.assertAlmostEqual(3384.97, soma, places=2)
 
+    def test_total_zerado_usa_os_valores_da_linha(self):
+        # TJDFT 07/2026: a coluna Total das planilhas de categoria vem 0, e o painel repete o valor
+        # numa segunda coluna Outra com Detalhe 0 (F9). Juíza aposentada e pensionista com o mesmo nome.
+        nome = 'DELEANE CAMARGO DE SANTANA FERNANDES'
+        contracheque = [
+            ['TJDFT', nome, '07/2026', 'JD0001 JUIZ DE DIREITO', '99000007 APOSENTADOS', 39753.21, 19877.0, 1501.78, 0.0,
+             61131.99, 6564.6, 9513.11, 0.0, 3325.72, 19403.43, 41728.56, 0, 0.0],
+            ['TJDFT', nome, '07/2026', 'PENSÃO CIVIL', 'PENSÃO CIVIL', 27434.9, 8787.55, 0.0, 0.0,
+             36222.45, 0.0, 0.0, 204.93, 5661.25, 5866.18, 30356.27, 0, 0.0],
+        ]
+        indenizacoes = [['TJDFT', nome, '07/2026', 0, 0, 1501.78, 0, 0, 0, 0, 0, 1501.78, 0, 0, 0, 0]]
+        pessoais = [
+            ['TJDFT', nome, '07/2026', 0.0, 8787.55, 'VANT PESSOAL - ATS - PA 25971/2022 - INATIVO', 8787.55, 0, 0],
+            ['TJDFT', nome, '07/2026', 0.0, 19877.0, 'PARCELA VALORIZACAO TEMPO ANTIGUIDADE CAR PENSAO', 19877.0, 0, 0],
+        ]
+        folha, _ = parse(dados(contracheque, indenizacoes=indenizacoes, pessoais=pessoais,
+                               court='tjdft', month='07'), 'tjdft/07/2026')
+        juiza, pensao = folha.contra_cheque
+        self.assertEqual(1501.78, itens(juiza)[('indenizações', 'Auxílio Saúde')])
+        self.assertNotIn('indenizações', {c for c, _ in itens(pensao)})
+        self.assertIn(('direitos-pessoais', 'PARCELA VALORIZACAO TEMPO ANTIGUIDADE CAR PENSAO'), itens(juiza))
+        self.assertIn(('direitos-pessoais', 'VANT PESSOAL - ATS - PA 25971/2022 - INATIVO'), itens(pensao))
+
+    def test_linha_dividida_com_nome_repetido(self):
+        # Painel novo: uma linha por texto de Detalhe. As partes do mesmo vínculo não podem
+        # ser empurradas para o outro vínculo do nome.
+        nome = 'FULANA'
+        d = dados([cc('TRT2', nome, '07/2026', 'DESEMBARGADOR', 1000.0, dp=3384.97),
+                   cc('TRT2', nome, '07/2026', 'PENSIONISTA', 900.0, dp=500.0)],
+                  pessoais=[dp('TRT2', nome, '07/2026', 218.39, 'VPNI - MAGISTRADO'),
+                            dp('TRT2', nome, '07/2026', 3166.58, 'VPNI - MAGISTRADO - PROVISORIO'),
+                            dp('TRT2', nome, '07/2026', 500.0, 'VPNI - PENSAO')],
+                  court='trt2', month='07')
+        folha, _ = parse(d, 'trt2/07/2026')
+        soma = lambda m: round(sum(v for (c, _), v in itens(m).items() if c == 'direitos-pessoais'), 2)
+        self.assertEqual([3384.97, 500.0], [soma(m) for m in folha.contra_cheque])
+
+    def test_totais_iguais_nos_dois_vinculos(self):
+        # Dois vínculos com o mesmo total na categoria: cada linha vai para um vínculo.
+        nome = 'FULANO'
+        d = dados([cc('TRT1', nome, '07/2026', 'JUIZ', 1000.0, ind=1000.0),
+                   cc('TRT1', nome, '07/2026', 'PENSIONISTA', 900.0, ind=1000.0)],
+                  indenizacoes=[ind('TRT1', nome, '07/2026', outra=1000.0, detalhe='A'),
+                                ind('TRT1', nome, '07/2026', outra=1000.0, detalhe='B')],
+                  month='07')
+        folha, _ = parse(d, 'trt1/07/2026')
+        self.assertEqual([('indenizações', 'A'), ('indenizações', 'B')],
+                         [next(k for k in itens(m) if k[0] == 'indenizações') for m in folha.contra_cheque])
+
+    def test_linha_exata_tem_prioridade(self):
+        # TJSC 08/2026: a linha de 944,90 não bate com nenhum vínculo (detalhe diferente do
+        # contracheque) e vem antes da linha de 14.095,32, que bate com o primeiro vínculo.
+        nome = 'ROGERIO MARIANO DO NASCIMENTO'
+        eventuais = lambda valor: ['TJSC', nome, '08/2026', 0, 0, 0, 0, 0, valor, 0, 0, 0, 0, 0, '0', 0, '0', valor]
+        d = dados([cc('TJSC', nome, '08/2026', 'JUIZ', 1000.0, de=14095.32),
+                   cc('TJSC', nome, '08/2026', 'JUIZ', 1000.0, de=1835.8)],
+                  eventuais=[eventuais(944.9), eventuais(14095.32)], court='tjsc', month='08')
+        folha, _ = parse(d, 'tjsc/08/2026')
+        soma = lambda m: round(sum(r.valor for r in m.remuneracoes.remuneracao if r.categoria == 'direitos-eventuais'), 2)
+        self.assertEqual([14095.32, 944.9], [soma(m) for m in folha.contra_cheque])
+
 
 if __name__ == '__main__':
     unittest.main()
