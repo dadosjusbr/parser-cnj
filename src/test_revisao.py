@@ -77,6 +77,22 @@ class TestRevisao(unittest.TestCase):
             parse(d, 'trt1/03/2026')
         self.assertEqual(data.STATUS_INVALID_FILE, cm.exception.code)
 
+    def test_homonimo_de_tribunal_vizinho_nao_entra(self):
+        # F7, trt1 03/2026: o arquivo do coletor antigo trazia TRT1 e TRT10 juntos.
+        nome = 'ADRIANA MEIRELES MELONIO'
+        d = dados([cc('TRT1', nome, '03/2026', 'JUIZ', 1000.0),
+                   cc('TRT10', nome, '03/2026', 'JUIZ', 37765.55, ind=1860.51)],
+                  indenizacoes=[ind('TRT10', nome, '03/2026', alimentacao=1860.51)],
+                  court='trt1')
+        folha, _ = parse(d, 'trt1/03/2026')
+        self.assertEqual(1, len(folha.contra_cheque))
+        self.assertNotIn(('indenizações', 'Auxílio-alimentação'), itens(folha.contra_cheque[0]))
+
+    def test_tribunal_com_espaco_e_minusculo(self):
+        d = dados([cc(' trt1 ', 'FULANO', '03/2026', 'JUIZ', 1000.0)], court='TRT1')
+        folha, _ = parse(d, 'trt1/03/2026')
+        self.assertEqual(1, len(folha.contra_cheque))
+
 
 if __name__ == '__main__':
     unittest.main()
