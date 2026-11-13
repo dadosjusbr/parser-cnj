@@ -56,6 +56,27 @@ class TestRevisao(unittest.TestCase):
             parse(d, 'trt1/03/2026')
         self.assertEqual(data.STATUS_INVALID_FILE, cm.exception.code)
 
+    def test_numeros_em_texto(self):
+        # Painel antigo, trt15 07/2026: Antecipação de férias '-24035' era gravada como 0.
+        self.assertEqual(-24035.0, number.format_element('-24035'))
+        self.assertEqual(-1234.56, number.format_element('-1234,56'))
+        self.assertEqual(1234.56, number.format_element('1.234,56'))
+        self.assertEqual(3045.99, number.format_element('3,045.99'))
+        self.assertEqual(99999.99, number.format_element('99999,99'))
+        self.assertEqual(0.0, number.format_element('R$  -'))
+        self.assertEqual(0.0, number.format_element('-'))
+        self.assertEqual(0.0, number.format_element(math.nan))
+        self.assertEqual(12145.18, number.format_element(12145.18))
+
+    def test_valor_em_texto_invalido_sai_com_5(self):
+        # Texto com dígito que não vira número não pode ser gravado como 0.
+        nome = 'FULANO'
+        d = dados([cc('TRT1', nome, '03/2026', 'JUIZ', 1000.0, ind=12.3)],
+                  indenizacoes=[ind('TRT1', nome, '03/2026', alimentacao='12a,3', total=12.3)])
+        with self.assertRaises(SystemExit) as cm:
+            parse(d, 'trt1/03/2026')
+        self.assertEqual(data.STATUS_INVALID_FILE, cm.exception.code)
+
 
 if __name__ == '__main__':
     unittest.main()

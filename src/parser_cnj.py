@@ -230,6 +230,9 @@ def parse(data, chave_coleta):
             f"Registro inválido ao processar verbas indenizatórias: {error}"
         )
         os._exit(1)
+    except ValueError as error:
+        sys.stderr.write(f"Valor que não pôde ser lido como número: {error}")
+        sys.exit(STATUS_INVALID_FILE)
 
     for values in employees.values():
         folha.contra_cheque.append(values)
