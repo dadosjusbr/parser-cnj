@@ -50,6 +50,12 @@ class TestRevisao(unittest.TestCase):
             data._arquivo(['/output/contracheque-trerj-2026-09.xlsx'], 'indenizacoes')
         self.assertEqual(data.STATUS_DATA_UNAVAILABLE, cm.exception.code)
 
+    def test_sem_linhas_do_orgao_nao_vira_coleta_vazia(self):
+        d = dados([cc('TRT1', 'FULANO', '02/2026', 'JUIZ', 1000.0)])
+        with self.assertRaises(SystemExit) as cm:
+            parse(d, 'trt1/03/2026')
+        self.assertEqual(data.STATUS_INVALID_FILE, cm.exception.code)
+
 
 if __name__ == '__main__':
     unittest.main()

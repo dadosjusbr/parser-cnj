@@ -11,7 +11,7 @@ from headers_keys import (CONTRACHEQUE, INDENIZACOES, DIREITOS_PESSOAIS,
                           DIREITOS_EVENTUAIS, HEADERS)
 import number
 import re
-from data import STATUS_DATA_UNAVAILABLE
+from data import STATUS_DATA_UNAVAILABLE, STATUS_INVALID_FILE
 
 
 sem_detalhamento = False
@@ -210,6 +210,11 @@ def parse(data, chave_coleta):
         contracheques, sem_detalhamento = parse_employees(
             data.contracheque, chave_coleta, data.court, data.month, data.year)
         employees.update(contracheques)
+        # Sem nenhuma linha do órgão e do mês, o arquivo não corresponde ao pedido
+        # (formato mudou, outro tribunal, outro mês). Não pode virar coleta vazia com sucesso.
+        if not employees:
+            sys.stderr.write(f"Nenhuma linha de {data.court} {data.month}/{data.year} no contracheque.")
+            sys.exit(STATUS_INVALID_FILE)
 
         _, sem_detalhamento = update_employees(
             data.indenizacoes, employees, INDENIZACOES, data.month, data.year)
