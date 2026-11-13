@@ -158,6 +158,8 @@ def cria_remuneracao(row, categoria):
 
 
 def parse_employees(fn, chave_coleta, court, month, year):
+    # sem_detalhamento é global para que planilhas sem linhas não deixem a variável indefinida.
+    global sem_detalhamento
     employees = {}
     counter = 1
     for row in fn:
@@ -187,6 +189,7 @@ def parse_employees(fn, chave_coleta, court, month, year):
 
 # Atualiza os dados que foram passados no segundo parâmetro
 def update_employees(data, employees, categoria, month, year):
+    global sem_detalhamento
     for row in data:
         name = row[1]
         if name in employees.keys() and row[2] == f'{int(month):02}/{year}':

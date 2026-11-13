@@ -36,6 +36,15 @@ def _convert_file(file, output_path):
     return f"{output_path}/{file_name}"
 
 
+def _arquivo(file_names, tipo):
+    """Retorna o arquivo do tipo pedido ou encerra com 'dados indisponíveis' se o coletor não o baixou."""
+    arquivos = [f for f in file_names if tipo in f]
+    if not arquivos:
+        sys.stderr.write(f"Planilha de {tipo} não encontrada entre os arquivos do coletor.")
+        sys.exit(STATUS_DATA_UNAVAILABLE)
+    return arquivos[0]
+
+
 def load(file_names, year, month, court, output_path):
     """Carrega os arquivos passados como parâmetros.
 
@@ -48,22 +57,11 @@ def load(file_names, year, month, court, output_path):
     :return um objeto Data() pronto para operar com os arquivos
     """
 
-    contracheque = _read(_convert_file(
-        [c for c in file_names if "contracheque" in c][0], output_path))
-    indenizacoes = _read(_convert_file(
-        [i for i in file_names if "indenizacoes" in i][0], output_path))
-    direitos_eventuais = _read(
-        _convert_file(
-            [de for de in file_names if "direitos-eventuais" in de][0], output_path)
-    )
-    direitos_pessoais = _read(
-        _convert_file(
-            [dp for dp in file_names if "direitos-pessoais" in dp][0], output_path)
-    )
-    controle_de_arquivos = _read(
-        _convert_file(
-            [ca for ca in file_names if "controle-de-arquivos" in ca][0], output_path)
-    )
+    contracheque = _read(_convert_file(_arquivo(file_names, "contracheque"), output_path))
+    indenizacoes = _read(_convert_file(_arquivo(file_names, "indenizacoes"), output_path))
+    direitos_eventuais = _read(_convert_file(_arquivo(file_names, "direitos-eventuais"), output_path))
+    direitos_pessoais = _read(_convert_file(_arquivo(file_names, "direitos-pessoais"), output_path))
+    controle_de_arquivos = _read(_convert_file(_arquivo(file_names, "controle-de-arquivos"), output_path))
 
     return Data(
         contracheque,
