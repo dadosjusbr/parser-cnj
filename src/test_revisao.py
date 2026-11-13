@@ -115,6 +115,34 @@ class TestRevisao(unittest.TestCase):
             d.validate()
         self.assertEqual(data.STATUS_DATA_UNAVAILABLE, cm.exception.code)
 
+    def test_par_invertido_da_o_mesmo_resultado(self):
+        # F1/F3, trt1 07/2026: juiz titular e pensionista com o mesmo nome, em ordens diferentes
+        # nos dois painéis. Cada vínculo deve ficar com o seu subsídio e as suas verbas.
+        nome = 'MAUREN XAVIER SEELING'
+        titular = cc('TRT1', nome, '07/2026', 'JUIZ TITULAR', 39753.21, ind=1000.0)
+        pensao = cc('TRT1', nome, '07/2026', 'PENSIONISTA', 48122.04, ind=500.0)
+        linhas_ind = [ind('TRT1', nome, '07/2026', outra=500.0, detalhe='PVTAC'),
+                      ind('TRT1', nome, '07/2026', outra=1000.0, detalhe='PVTAC')]
+        resultados = []
+        for ordem in ([titular, pensao], [pensao, titular]):
+            folha, _ = parse(dados(ordem, indenizacoes=linhas_ind, month='07'), 'trt1/07/2026')
+            resultados.append(sorted((m.funcao, itens(m)[('contracheque', 'Subsídio')],
+                                      itens(m)[('indenizações', 'PVTAC')]) for m in folha.contra_cheque))
+        self.assertEqual(resultados[0], resultados[1])
+        self.assertIn(('JUIZ TITULAR', 39753.21, 1000.0), resultados[0])
+
+    def test_detalhe_dividido_em_varias_linhas(self):
+        # Painel novo, trt2 07/2026: o painel antigo juntava a VPNI de ANA MARIA BRISOLA numa
+        # linha com Detalhe '-' (3.384,97); o novo traz uma linha por texto de Detalhe.
+        nome = 'ANA MARIA BRISOLA'
+        d = dados([cc('TRT2', nome, '07/2026', 'DESEMBARGADOR', 41845.49, dp=3384.97)],
+                  pessoais=[dp('TRT2', nome, '07/2026', 218.39, 'VPNI (ADICIONAL POR TEMPO DE SERVIÇO) - MAGISTRADO'),
+                            dp('TRT2', nome, '07/2026', 3166.58, 'VPNI (ADICIONAL POR TEMPO DE SERVIÇO) - MAGISTRADO - PROVISÓRIO')],
+                  court='trt2', month='07')
+        folha, _ = parse(d, 'trt2/07/2026')
+        soma = sum(v for (c, _), v in itens(folha.contra_cheque[0]).items() if c == 'direitos-pessoais')
+        self.assertAlmostEqual(3384.97, soma, places=2)
+
 
 if __name__ == '__main__':
     unittest.main()

@@ -77,6 +77,41 @@ class TestParser(unittest.TestCase):
         self.assertIn('- PVTAC,\rGECJAO', itens)
         self.assertFalse(any('_x000D_' in item for item in itens))
 
+    def test_magistrado_com_dois_vinculos(self):
+        # TJGO 09/2026: o mesmo nome aparece como desembargadora e como pensionista.
+        # Cada linha do contracheque deve virar um contracheque, e as outras planilhas
+        # devem ir para o vínculo cujo total da categoria bate com o da linha.
+        nome = 'AVELIRDES ALMEIDA PINHEIRO DE LEMOS'
+        contracheque = [
+            ['TJGO', nome, '09/2026', 'DESEMBARGADOR', '0', 41845.49, 14645.92, 27199.54, 0.0,
+             83690.95, 6179.68, 9618.97, 0, 10125.22, 25923.87, 57767.08, 0, 0],
+            ['TJGO', nome, '09/2026', 'PENSIONISTA DE MAGISTRADO', '0', 37586.56, 0.0, 1879.33, 0.0,
+             39465.89, 4928.58, 7548.62, 0, 0.0, 12477.2, 26988.69, 0, 0],
+        ]
+        indenizacoes = [
+            ['TJGO', nome, '09/2026', 0.0, 0.0, 0.0, 0, 0, 0, 1879.33, '- PVTAC', 0.0, '-', 0, '-', 1879.33],
+            ['TJGO', nome, '09/2026', 0.0, 0.0, 6276.79, 0, 0, 0, 14645.92, '- PVTAC', 6276.83, '- DIF. PVTAC', 0, '-', 27199.54],
+        ]
+        direitos_pessoais = [
+            ['TJGO', nome, '09/2026', 0.0, 14645.92, '- VPNI', 0, '-', 14645.92],
+            ['TJGO', nome, '09/2026', 0.0, 0.0, '-', 0, '-', 0.0],
+        ]
+        dados = type('Dados', (), dict(contracheque=contracheque, indenizacoes=indenizacoes,
+                                       direitos_eventuais=[], direitos_pessoais=direitos_pessoais,
+                                       court='TJGO', month='09', year='2026'))
+        folha, _ = parse(dados, 'tjgo/09/2026')
+
+        self.assertEqual(2, len(folha.contra_cheque))
+        desembargadora, pensionista = folha.contra_cheque
+        self.assertEqual('DESEMBARGADOR', desembargadora.funcao)
+        self.assertEqual('PENSIONISTA DE MAGISTRADO', pensionista.funcao)
+        itens = lambda m: {(r.categoria, r.item): r.valor for r in m.remuneracoes.remuneracao if r.valor}
+        self.assertEqual(41845.49, itens(desembargadora)[('contracheque', 'Subsídio')])
+        self.assertEqual(6276.83, itens(desembargadora)[('indenizações', '- DIF. PVTAC')])
+        self.assertEqual(14645.92, itens(desembargadora)[('direitos-pessoais', '- VPNI')])
+        self.assertEqual(1879.33, itens(pensionista)[('indenizações', '- PVTAC')])
+        self.assertNotIn(('direitos-pessoais', '- VPNI'), itens(pensionista))
+
 
 if __name__ == '__main__':
     unittest.main()

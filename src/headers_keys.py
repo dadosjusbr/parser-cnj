@@ -3,6 +3,21 @@ INDENIZACOES = "indenizações"
 DIREITOS_EVENTUAIS = "direitos-eventuais"
 DIREITOS_PESSOAIS = "direitos-pessoais"
 
+# Coluna do contracheque com o total de cada categoria (usada para achar o vínculo
+# certo quando o mesmo magistrado aparece em mais de uma linha).
+TOTAL_NO_CONTRACHEQUE = {
+    DIREITOS_PESSOAIS: 6,
+    INDENIZACOES: 7,
+    DIREITOS_EVENTUAIS: 8,
+}
+
+# Coluna com o total da linha em cada planilha de categoria.
+TOTAL_DA_CATEGORIA = {
+    INDENIZACOES: 15,
+    DIREITOS_EVENTUAIS: 17,
+    DIREITOS_PESSOAIS: 8,
+}
+
 HEADERS = {
     CONTRACHEQUE: {
         "Subsídio": 5,

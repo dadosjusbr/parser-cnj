@@ -8,7 +8,8 @@ from coleta import coleta_pb2 as Coleta
 from openpyxl.utils.escape import unescape
 
 from headers_keys import (CONTRACHEQUE, INDENIZACOES, DIREITOS_PESSOAIS,
-                          DIREITOS_EVENTUAIS, HEADERS)
+                          DIREITOS_EVENTUAIS, HEADERS, TOTAL_NO_CONTRACHEQUE,
+                          TOTAL_DA_CATEGORIA)
 import number
 import re
 from data import STATUS_DATA_UNAVAILABLE, STATUS_INVALID_FILE
@@ -192,20 +193,56 @@ def parse_employees(fn, chave_coleta, court, month, year):
             contracheques, sem_detalhamento = cria_remuneracao(
                 row, CONTRACHEQUE)
             membro.remuneracoes.CopyFrom(contracheques)
-            employees[name] = membro
+            # Um mesmo nome pode ter mais de um vínculo no mês (ex.: desembargador e
+            # pensionista). Cada linha vira um contracheque; employees guarda, por nome,
+            # a lista de vínculos com a linha original de cada um.
+            employees.setdefault(name, []).append((membro, row))
             counter += 1
     return employees, sem_detalhamento
 
-# Atualiza os dados que foram passados no segundo parâmetro
+
+def total(valor):
+    return round(number.format_element(valor), 2)
+
+
+# Escolhe o vínculo que recebe a linha de uma planilha de categoria quando o nome se repete.
+# 1) o vínculo livre cujo total da categoria no contracheque é igual ao total da linha;
+# 2) se o total da linha é a soma de todos os vínculos, o painel juntou os vínculos numa
+#    linha só: ela fica no primeiro vínculo;
+# 3) senão, segue a ordem das linhas.
+def escolhe_vinculo(row, vinculos, categoria, usados):
+    total_linha = total(row[TOTAL_DA_CATEGORIA[categoria]])
+    totais = [total(cc_row[TOTAL_NO_CONTRACHEQUE[categoria]]) for _, cc_row in vinculos]
+    livres = [i for i in range(len(vinculos)) if i not in usados]
+    for i in livres:
+        if abs(totais[i] - total_linha) < 0.01:
+            return i
+    if total_linha != 0 and abs(sum(totais) - total_linha) < 0.01:
+        sys.stderr.write(f"Aviso: {row[1]} ({categoria}) tem uma linha só para {len(vinculos)} vínculos.\n")
+        return 0
+    if total_linha != 0:
+        sys.stderr.write(f"Aviso: {row[1]} ({categoria}) associado pela ordem das linhas.\n")
+    return livres[0] if livres else 0
+
+
+# Acrescenta aos contracheques os itens de uma planilha de categoria.
 def update_employees(data, employees, categoria, court, month, year):
     global sem_detalhamento
+    usados = {}
     for row in data:
         name = row[1]
-        if name in employees.keys() and no_recorte(row, court, month, year):
-            emp = employees[name]
-            remu, sem_detalhamento = cria_remuneracao(row, categoria)
-            emp.remuneracoes.MergeFrom(remu)
-            employees[name] = emp
+        if not no_recorte(row, court, month, year):
+            continue
+        if name not in employees:
+            sys.stderr.write(f"Aviso: {name} está em {categoria} e não está no contracheque.\n")
+            continue
+        vinculos = employees[name]
+        i = 0
+        if len(vinculos) > 1:
+            i = escolhe_vinculo(row, vinculos, categoria, usados.setdefault(name, set()))
+            usados[name].add(i)
+        remu, sem_detalhamento = cria_remuneracao(row, categoria)
+        vinculos[i][0].remuneracoes.MergeFrom(remu)
     return employees, sem_detalhamento
 
 
@@ -243,8 +280,11 @@ def parse(data, chave_coleta):
         sys.stderr.write(f"Valor que não pôde ser lido como número: {error}")
         sys.exit(STATUS_INVALID_FILE)
 
-    for values in employees.values():
-        folha.contra_cheque.append(values)
+    for vinculos in employees.values():
+        for membro, _ in vinculos:
+            folha.contra_cheque.append(membro)
+    # Mantém a ordem das linhas da planilha; o armazenador numera os contracheques por posição.
+    folha.contra_cheque.sort(key=lambda m: int(m.id_contra_cheque.split("/")[-1]))
     return folha, sem_detalhamento
 
 
