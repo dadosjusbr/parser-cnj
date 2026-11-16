@@ -11,10 +11,21 @@ from headers_keys import (CONTRACHEQUE, INDENIZACOES, DIREITOS_PESSOAIS,
                           DIREITOS_EVENTUAIS, HEADERS)
 import number
 import re
-from data import STATUS_DATA_UNAVAILABLE
+from data import STATUS_DATA_UNAVAILABLE, STATUS_INVALID_FILE
 
 
 sem_detalhamento = False
+
+
+# Recorte do órgão e do mês, igual em todas as planilhas. O coletor antigo baixava
+# junto os tribunais com a mesma sigla no início (tjms/TJMSP, trt1/TRT10 a TRT19,
+# trt2/TRT20 a TRT24), então o tribunal precisa ser conferido em todas elas.
+def no_recorte(row, court, month, year):
+    tribunal, referencia = row[0], row[2]
+    if number.is_nan(row[1]) or not isinstance(tribunal, str):
+        return False
+    return (tribunal.strip().casefold() == court.strip().casefold()
+            and str(referencia).strip() == f'{int(month):02}/{year}')
 
 def cria_remuneracao(row, categoria):
     remu_array = Coleta.Remuneracoes()
@@ -158,14 +169,14 @@ def cria_remuneracao(row, categoria):
 
 
 def parse_employees(fn, chave_coleta, court, month, year):
+    # sem_detalhamento é global para que planilhas sem linhas não deixem a variável indefinida.
+    global sem_detalhamento
     employees = {}
     counter = 1
     for row in fn:
         name = row[1]
-        # Usa-se o isNaN para não pegar linhas vázias.
-        # A segunda condição verifica se o membro pertence ao órgão.
-        # A terceira condição verifica se o dado pertece ao mês correspondente
-        if not number.is_nan(name) and row[0].casefold() == court.casefold() and row[2] == f'{int(month):02}/{year}':
+        # Ignora linhas vazias e linhas de outro órgão ou de outro mês.
+        if no_recorte(row, court, month, year):
             if name in (0,'0'):
                 sys.stderr.write(f"Dados de contracheque sumarizados.")
                 sys.exit(STATUS_DATA_UNAVAILABLE)
@@ -186,10 +197,11 @@ def parse_employees(fn, chave_coleta, court, month, year):
     return employees, sem_detalhamento
 
 # Atualiza os dados que foram passados no segundo parâmetro
-def update_employees(data, employees, categoria, month, year):
+def update_employees(data, employees, categoria, court, month, year):
+    global sem_detalhamento
     for row in data:
         name = row[1]
-        if name in employees.keys() and row[2] == f'{int(month):02}/{year}':
+        if name in employees.keys() and no_recorte(row, court, month, year):
             emp = employees[name]
             remu, sem_detalhamento = cria_remuneracao(row, categoria)
             emp.remuneracoes.MergeFrom(remu)
@@ -207,21 +219,29 @@ def parse(data, chave_coleta):
         contracheques, sem_detalhamento = parse_employees(
             data.contracheque, chave_coleta, data.court, data.month, data.year)
         employees.update(contracheques)
+        # Sem nenhuma linha do órgão e do mês, o arquivo não corresponde ao pedido
+        # (formato mudou, outro tribunal, outro mês). Não pode virar coleta vazia com sucesso.
+        if not employees:
+            sys.stderr.write(f"Nenhuma linha de {data.court} {data.month}/{data.year} no contracheque.")
+            sys.exit(STATUS_INVALID_FILE)
 
         _, sem_detalhamento = update_employees(
-            data.indenizacoes, employees, INDENIZACOES, data.month, data.year)
+            data.indenizacoes, employees, INDENIZACOES, data.court, data.month, data.year)
 
         _, sem_detalhamento = update_employees(
-            data.direitos_eventuais, employees, DIREITOS_EVENTUAIS, data.month, data.year)
+            data.direitos_eventuais, employees, DIREITOS_EVENTUAIS, data.court, data.month, data.year)
 
         _, sem_detalhamento = update_employees(
-            data.direitos_pessoais, employees, DIREITOS_PESSOAIS, data.month, data.year)
+            data.direitos_pessoais, employees, DIREITOS_PESSOAIS, data.court, data.month, data.year)
 
     except KeyError as error:
         sys.stderr.write(
             f"Registro inválido ao processar verbas indenizatórias: {error}"
         )
         os._exit(1)
+    except ValueError as error:
+        sys.stderr.write(f"Valor que não pôde ser lido como número: {error}")
+        sys.exit(STATUS_INVALID_FILE)
 
     for values in employees.values():
         folha.contra_cheque.append(values)
