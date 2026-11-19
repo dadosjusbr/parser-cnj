@@ -205,5 +205,132 @@ class TestRevisao(unittest.TestCase):
         self.assertEqual([14095.32, 944.9], [soma(m) for m in folha.contra_cheque])
 
 
+# Linhas reais dos backups das coletas (contracheque e planilhas de categoria do CNJ).
+CRISTINA = 'CRISTINA SOLANGE ROCHA XAVIER'
+CRISTINA_2024_10 = [
+    ['TRT1', CRISTINA, '10/2024', 'JUIZ TITULAR DE VARA DO TRABALHO', 'INATIVO', 64315.34, 2077.57, 0, 0,
+     66392.91, 5358.18, 9209.25, 0, -20943.47, -6376.04, 72768.95, 0, 0],
+    ['TRT1', CRISTINA, '10/2024', 'PENSIONISTA', 'PENSIONISTA', 64315.34, 2077.57, 0, 0,
+     66392.91, 5358.18, 9209.25, 0, -20943.47, -6376.04, 72768.95, 0, 0],
+]
+
+
+def subsidio(membro):
+    return itens(membro).get(('contracheque', 'Subsídio'), 0.0)
+
+
+class TestRepeticaoIdentica(unittest.TestCase):
+    # Até 03/2025 o painel repetia o mesmo pagamento em uma linha por cargo da carreira, com
+    # todos os valores iguais, e as planilhas de categoria tinham uma linha só para o nome.
+    def setUp(self):
+        parser_cnj.sem_detalhamento = False
+
+    def test_repeticao_identica_vira_um_contracheque(self):
+        # TRT1 10/2024: mesmo pagamento como juíza titular e como pensionista.
+        d = dados(CRISTINA_2024_10,
+                  pessoais=[['TRT1', CRISTINA, '10/2024', 0, 2077.57, '-', 0, '0', 2077.57]],
+                  court='trt1', month='10', year='2024')
+        folha, _ = parse(d, 'trt1/10/2024')
+        self.assertEqual(1, len(folha.contra_cheque))
+        membro = folha.contra_cheque[0]
+        # Cargo e lotação da última linha, como no banco hoje.
+        self.assertEqual(('PENSIONISTA', 'PENSIONISTA'), (membro.funcao, membro.local_trabalho))
+        self.assertEqual('trt1/10/2024/1', membro.id_contra_cheque)
+        self.assertEqual(64315.34, subsidio(membro))
+        self.assertEqual(2077.57, itens(membro)[('direitos-pessoais', '-')])
+
+    def test_repeticao_e_vinculo_distinto(self):
+        # Repetição idêntica e um vínculo com outros valores: dois contracheques, e as posições
+        # seguem sem buraco para o próximo nome.
+        outra = ['TRT1', CRISTINA, '10/2024', 'PENSIONISTA', 'PENSIONISTA', 19876.61] + [0] * 12
+        d = dados(CRISTINA_2024_10 + [outra, cc('TRT1', 'FULANO', '10/2024', 'JUIZ', 1000.0)],
+                  court='trt1', month='10', year='2024')
+        folha, _ = parse(d, 'trt1/10/2024')
+        self.assertEqual([64315.34, 19876.61, 1000.0], [subsidio(m) for m in folha.contra_cheque])
+        self.assertEqual(['trt1/10/2024/1', 'trt1/10/2024/2', 'trt1/10/2024/3'],
+                         [m.id_contra_cheque for m in folha.contra_cheque])
+
+    def test_valor_diferente_em_uma_coluna_e_outro_vinculo(self):
+        # Basta uma coluna de valor diferente (aqui, Diárias) para serem dois vínculos.
+        linhas = [list(r) for r in CRISTINA_2024_10]
+        linhas[1][17] = 100.0
+        folha, _ = parse(dados(linhas, court='trt1', month='10', year='2024'), 'trt1/10/2024')
+        self.assertEqual(2, len(folha.contra_cheque))
+
+
+class TestPadroesTRT(unittest.TestCase):
+    # Os quatro padrões de nome repetido com valores diferentes nos TRTs (2025 e 2026).
+    # Cada linha do contracheque continua sendo um contracheque.
+    def setUp(self):
+        parser_cnj.sem_detalhamento = False
+
+    def confere(self, contracheque, chave, esperado, **planilhas):
+        org, mes, ano = chave.split('/')
+        folha, _ = parse(dados(contracheque, court=org, month=mes, year=ano, **planilhas), chave)
+        self.assertEqual(esperado, [(m.funcao, m.local_trabalho, subsidio(m)) for m in folha.contra_cheque])
+        return folha
+
+    def test_magistrado_que_recebe_pensao(self):
+        # TRT11 10/2025, painel antigo: as planilhas de categoria somam os dois vínculos numa
+        # linha só, que fica no primeiro vínculo (decisão D1).
+        nome = 'RILDO CORDEIRO RODRIGUES'
+        lot = 'GABINETE DO JUIZ TITULAR DA 15A VT DE MANAUS'
+        folha = self.confere(
+            [['TRT11', nome, '10/2025', 'JUIZ TITULAR DE VARA', lot, 39753.21, 12128.39, 63883.41, 13251.07,
+              129016.08, 7136.16, 10445.77, 0, 15694.85, 33276.78, 95739.3, 0, 0],
+             ['TRT11', nome, '10/2025', 'PENSIONISTA', 'PENSIONISTA', 14953.32, 0, 16199.43, 0,
+              31152.75, 0, 672.03, 0, 0, 672.03, 30480.72, 0, 0]],
+            'trt11/10/2025',
+            [('JUIZ TITULAR DE VARA', lot, 39753.21), ('PENSIONISTA', 'PENSIONISTA', 14953.32)],
+            indenizacoes=[['TRT11', nome, '10/2025', 1784.42, 0, 1092, 0, 0, 0, 0, '0', 0, '0', 77206.42, '-', 80082.84]])
+        soma = lambda m: round(sum(v for (c, _), v in itens(m).items() if c == 'indenizações'), 2)
+        self.assertEqual(80082.84, round(sum(soma(m) for m in folha.contra_cheque), 2))
+
+    def test_mudanca_de_cargo_no_mes(self):
+        # TRT1 10/2026, painel novo: uma linha por vínculo também nas planilhas de categoria.
+        nome = 'ANDRE GUSTAVO BITTENCOURT VILLELA'
+        lot = 'GAB DES. ANDRE GUSTAVO BITTENCOURT VILLELA'
+        vpni = 'VPNI (ADICIONAL POR TEMPO DE SERVIÇO) - MAGISTRADO'
+        folha = self.confere(
+            [['TRT1', nome, '10/2026', 'DESEMBARGADOR DO TRABALHO', lot, 41845.49, 7264.89, 29291.84, 329.36,
+              78731.58, 988.07, 12153.05, 0, 1756.12, 14897.24, 63834.34, 0, 0],
+             ['TRT1', nome, '10/2026', 'JUIZ TITULAR DE VARA DO TRABALHO', lot, 0, 0, 0, 755.96,
+              755.96, 0, 0, 0, 0, 0, 755.96, 0, 0]],
+            'trt1/10/2026',
+            [('DESEMBARGADOR DO TRABALHO', lot, 41845.49), ('JUIZ TITULAR DE VARA DO TRABALHO', lot, 0.0)],
+            pessoais=[['TRT1', nome, '10/2026', 988.07, 6276.82, vpni, 0, '0', 7264.89],
+                      ['TRT1', nome, '10/2026', 0, 0, '0', 0, '0', 0]])
+        desembargador, juiz = folha.contra_cheque
+        self.assertEqual(6276.82, itens(desembargador)[('direitos-pessoais', vpni)])
+        self.assertNotIn('direitos-pessoais', {c for c, _ in itens(juiz)})
+
+    def test_pagamento_avulso_em_linha_separada(self):
+        # TRT1 05/2026: aposentado com uma linha extra sem lotação ('0'), só com um estorno.
+        # A linha extra vira um contracheque próprio (decisão D2), com os descontos dela.
+        nome = 'ANGELO GALVAO ZAMORANO'
+        folha = self.confere(
+            [['TRT1', nome, '05/2026', 'DESEMBARGADOR DO TRABALHO', '0', 0, 0, 0, -31675.13,
+              -31675.13, -1999.21, 2567.86, 0, 0, 568.65, -32243.78, 0, 0],
+             ['TRT1', nome, '05/2026', 'DESEMBARGADOR DO TRABALHO', 'INATIVO', 0, 0, 14645.92, 0,
+              14645.92, 7641.47, 0, 0, 0, 7641.47, 7004.45, 0, 0]],
+            'trt1/05/2026',
+            [('DESEMBARGADOR DO TRABALHO', '0', 0.0), ('DESEMBARGADOR DO TRABALHO', 'INATIVO', 0.0)])
+        avulso, inativo = folha.contra_cheque
+        self.assertEqual(-2567.86, itens(avulso)[('contracheque', 'Imposto de renda')])
+        self.assertEqual(-7641.47, itens(inativo)[('contracheque', 'Previdência Pública')])
+
+    def test_ativo_e_aposentado_no_mesmo_mes(self):
+        # TRT15 06/2026: mesmo cargo, uma linha como INATIVO e outra com a lotação da vara.
+        nome = 'MARCELO BUENO PALLONE'
+        vara = 'VARA DO TRABALHO DE CAMPO LIMPO PAULISTA'
+        self.confere(
+            [['TRT15', nome, '06/2026', 'JUIZ TITULAR DE VARA', 'INATIVO', 34266.67, 1195.03, 10031.5, 18343.61,
+              63836.81, 0, 3135.85, 0, 0, 3135.85, 60700.96, 0, 0],
+             ['TRT15', nome, '06/2026', 'JUIZ TITULAR DE VARA', vara, 0, 0, 0, 274934.05,
+              274934.05, 988.07, 4460.39, 0, 0, 5448.46, 269485.59, 0, 0]],
+            'trt15/06/2026',
+            [('JUIZ TITULAR DE VARA', 'INATIVO', 34266.67), ('JUIZ TITULAR DE VARA', vara, 0.0)])
+
+
 if __name__ == '__main__':
     unittest.main()

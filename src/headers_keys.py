@@ -11,6 +11,10 @@ TOTAL_NO_CONTRACHEQUE = {
     DIREITOS_EVENTUAIS: 8,
 }
 
+# Colunas de valor do contracheque (Subsídio até Diárias). Linhas do mesmo nome com todas
+# essas colunas iguais são o mesmo pagamento repetido, não outro vínculo.
+VALORES_DO_CONTRACHEQUE = range(5, 18)
+
 # Coluna com o total da linha em cada planilha de categoria.
 TOTAL_DA_CATEGORIA = {
     INDENIZACOES: 15,

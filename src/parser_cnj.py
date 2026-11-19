@@ -9,7 +9,8 @@ from openpyxl.utils.escape import unescape
 
 from headers_keys import (CONTRACHEQUE, INDENIZACOES, DIREITOS_PESSOAIS,
                           DIREITOS_EVENTUAIS, HEADERS, TOTAL_NO_CONTRACHEQUE,
-                          TOTAL_DA_CATEGORIA, VALORES_DA_CATEGORIA)
+                          TOTAL_DA_CATEGORIA, VALORES_DA_CATEGORIA,
+                          VALORES_DO_CONTRACHEQUE)
 import number
 import re
 from data import STATUS_DATA_UNAVAILABLE, STATUS_INVALID_FILE
@@ -169,11 +170,24 @@ def cria_remuneracao(row, categoria):
     return remu_array, sem_detalhamento
 
 
+# Valores da linha do contracheque, para comparar linhas do mesmo nome. Texto que não vira
+# número entra como texto: a comparação não pode criar um erro que o parser não teria.
+def valores_do_contracheque(row):
+    valores = []
+    for i in VALORES_DO_CONTRACHEQUE:
+        try:
+            valores.append(total(row[i]))
+        except ValueError:
+            valores.append(str(row[i]).strip())
+    return tuple(valores)
+
+
 def parse_employees(fn, chave_coleta, court, month, year):
     # sem_detalhamento é global para que planilhas sem linhas não deixem a variável indefinida.
     global sem_detalhamento
     employees = {}
     counter = 1
+    repeticoes = 0
     for row in fn:
         name = row[1]
         # Ignora linhas vazias e linhas de outro órgão ou de outro mês.
@@ -181,6 +195,21 @@ def parse_employees(fn, chave_coleta, court, month, year):
             if name in (0,'0'):
                 sys.stderr.write(f"Dados de contracheque sumarizados.")
                 sys.exit(STATUS_DATA_UNAVAILABLE)
+
+            # Até 03/2025 o painel repetia o mesmo pagamento em uma linha por cargo da carreira,
+            # com todos os valores iguais, e as planilhas de categoria traziam uma linha só.
+            # A repetição continua sendo um contracheque, na posição da primeira linha e com o
+            # cargo e a lotação da última, como o parser fazia antes de separar os vínculos.
+            vinculos = employees.get(name, [])
+            valores = valores_do_contracheque(row)
+            igual = next((k for k, (_, r) in enumerate(vinculos)
+                          if valores_do_contracheque(r) == valores), None)
+            if igual is not None:
+                membro = vinculos[igual][0]
+                membro.funcao = str(row[3])
+                membro.local_trabalho = str(row[4])
+                repeticoes += 1
+                continue
 
             membro = Coleta.ContraCheque()
             membro.id_contra_cheque = chave_coleta + "/" + str(counter)
@@ -198,6 +227,9 @@ def parse_employees(fn, chave_coleta, court, month, year):
             # a lista de vínculos com a linha original de cada um.
             employees.setdefault(name, []).append((membro, row))
             counter += 1
+    if repeticoes:
+        sys.stderr.write(f"Aviso: {repeticoes} linha(s) do contracheque repetem os valores de outra "
+                         f"linha do mesmo nome e foram agrupadas no mesmo contracheque.\n")
     return employees, sem_detalhamento
 
 
